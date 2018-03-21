@@ -104,7 +104,6 @@ for file in /etc/init/hwclock*.conf; do
 done
 
 # No need to automatically adjust the CPU scheduler.
-{
 for option in stop disable; do
     systemctl "$option" ondemand || true
 done
