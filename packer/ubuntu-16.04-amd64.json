@@ -8,7 +8,8 @@
     "triton_url": "{{env `TRITON_URL`}}",
     "triton_account": "{{env `TRITON_ACCOUNT`}}",
     "triton_key_id": "{{env `TRITON_KEY_ID`}}",
-    "triton_package": "k4-general-kvm-3.75G"
+    "triton_package": "k4-general-kvm-3.75G",
+    "debug": "{{env `PACKER_DEBUG`}}"
   },
   "builders": [
     {
@@ -60,21 +61,21 @@
         "PACKER_BUILD_TIMESTAMP={{timestamp}}",
         "PACKER_BUILD_VERSION={{user `version`}}"
       ],
-      "execute_command": "{{ .Vars }} sudo -H -S -E -n bash '{{ .Path }}'",
+      "execute_command": "{{ .Vars }} sudo -H -S -E -n bash {{if eq (user `debug`) `true` }}-x{{end}} '{{ .Path }}'",
       "expect_disconnect": "true",
       "scripts": [
-            "scripts/triton/hostname.sh",
-            "scripts/common/update.sh",
-            "scripts/common/packages.sh",
-            "scripts/common/sshd.sh",
-            "scripts/triton/motd.sh",
-            "scripts/common/motd.sh",
-            "scripts/common/reboot.sh",
-            "scripts/common/disable-ipv6.sh",
-            "scripts/common/networking.sh",
-            "scripts/common/sudoers.sh",
-            "scripts/triton/grub.sh",
-            "scripts/common/clean-up.sh"
+        "scripts/triton/hostname.sh",
+        "scripts/common/update.sh",
+        "scripts/common/packages.sh",
+        "scripts/common/sshd.sh",
+        "scripts/triton/motd.sh",
+        "scripts/common/motd.sh",
+        "scripts/common/reboot.sh",
+        "scripts/common/disable-ipv6.sh",
+        "scripts/common/networking.sh",
+        "scripts/common/sudoers.sh",
+        "scripts/triton/grub.sh",
+        "scripts/common/clean-up.sh"
       ]
     }
   ]
