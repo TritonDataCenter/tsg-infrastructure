@@ -25,9 +25,10 @@ apt_get_update
 
 for package in "${PACKAGES[@]}"; do
     apt-get --assume-yes install "$package"
+    sleep 2
 done
 
-systemctl stop ntp
+systemctl stop ntp || true
 
 # Force IPv4 only, and enable slew mode to handle the clock
 # moving backwards in one large increment, for example in a

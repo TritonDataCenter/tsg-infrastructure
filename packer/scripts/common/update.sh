@@ -7,6 +7,7 @@ export PATH='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin'
 source /var/tmp/helpers/default.sh
 
 readonly COMMON_FILES='/var/tmp/common'
+readonly UBUNTU_RELEASE=$(detect_ubuntu_release)
 
 # Remove current Apt and DPKG overrides ...
 rm -f /etc/apt/apt.conf.d/* \
@@ -42,7 +43,7 @@ APT
 };
 EOF
 
-cat <<EOF > /etc/apt/apt.conf.d/99vendor-ubuntu
+cat <<'EOF' > /etc/apt/apt.conf.d/99vendor-ubuntu
 Acquire
 {
     Changelogs
@@ -52,13 +53,7 @@ Acquire
 };
 EOF
 
-# Any Amazon EC2 instance can use local packages mirror, but quite often
-# such mirrors are backed by an S3 buckets causing performance drop due
-# to a known problem outside of the "us-east-1" region when using HTTP
-# pipelining for more efficient downloads.
-PIPELINE_DEPTH=5
-
-cat <<EOF > /etc/apt/apt.conf.d/99apt-acquire
+cat <<'EOF' > /etc/apt/apt.conf.d/99apt-acquire
 Acquire
 {
     PDiffs "0";
@@ -72,7 +67,7 @@ Acquire
     http
     {
         Timeout "120";
-        Pipeline-Depth "${PIPELINE_DEPTH}";
+        Pipeline-Depth "5";
 
         No-cache "0";
         Max-Age "86400";
@@ -208,18 +203,42 @@ cat <<'EOF' > /etc/dpkg/dpkg.cfg.d/99apt-speedup
 force-unsafe-io
 EOF
 
-chown root: /etc/apt/apt.conf.d/* \
-            /etc/dpkg/dpkg.cfg.d/*
-
-chmod 644 /etc/apt/apt.conf.d/* \
-          /etc/dpkg/dpkg.cfg.d/*
-
 # Make sure that Apt updates are consistent...
 dpkg-divert --divert /etc/apt/apt.conf.d/99apt-autoremove \
             --rename /etc/apt/apt.conf.d/01autoremove
 
 dpkg-divert --divert /etc/apt/apt.conf.d/99vendor-ubuntu \
             --rename /etc/apt/apt.conf.d/01-vendor-ubuntu
+
+chown root: /etc/apt/apt.conf.d/* \
+            /etc/dpkg/dpkg.cfg.d/*
+
+chmod 644 /etc/apt/apt.conf.d/* \
+          /etc/dpkg/dpkg.cfg.d/*
+
+# Allow some grace time for the "cloud-init" to finish
+# and to override the default package mirror.
+for n in {1..30}; do
+    echo 'Waiting for cloud-init to finish ...'
+
+    if test -f /var/lib/cloud/instance/boot-finished; then
+        break
+    else
+        # Wait a little longer every time.
+        sleep $n
+    fi
+done
+
+# By default, the "cloud-init" will override the default mirror when run as
+# Triton instance, thus we replace this file only when building our image,
+# and render template overriding current list.
+eval "echo \"$(cat /var/tmp/triton/sources.list.template)\"" \
+    > /etc/apt/sources.list
+
+chown root: /etc/apt/sources.list
+chmod 644 /etc/apt/sources.list
+
+rm -f /var/tmp/triton/sources.list.template
 
 if [[ -f /etc/update-manager/release-upgrades ]]; then
   sed -i -e \
@@ -239,6 +258,7 @@ apt-get --assume-yes install "linux-headers-$(uname -r)"
 # Update everything ...
 apt-get --assume-yes upgrade
 
+# Update everything else ...
 apt-get --assume-yes full-upgrade
 
 cat <<'EOF' > /etc/timezone
@@ -300,6 +320,12 @@ NAME_SERVERS=(
     '4.2.2.2' # Level3
 )
 
+if [[ $PACKER_BUILDER_TYPE =~ ^vmware.*$ ]]; then
+    NAME_SERVERS+=( $(route -n | \
+        grep -E 'UG[ \t]' | \
+            awk '{ print $2 }') )
+fi
+
 cat <<EOF | sed -e '/^$/d' > /etc/resolvconf/resolv.conf.d/tail
 $(for server in "${NAME_SERVERS[@]}"; do
     echo "nameserver $server"
@@ -334,6 +360,44 @@ chown root: /etc/nsswitch.conf
 chmod 644 /etc/nsswitch.conf
 
 update-ca-certificates -v
+
+# Support minimal subset of data sources.
+DATA_SOURCES=( NoCloud SmartOS None )
+
+cat <<EOF > /etc/cloud/cloud.cfg.d/90_overrides.cfg
+datasource_list: [ $(join $',' "${DATA_SOURCES[@]}" | sed -e 's/,/, /g') ]
+EOF
+
+    cat <<'EOF' | tee -a /etc/cloud/cloud.cfg.d/90_overrides.cfg >/dev/null
+cloud_config_modules:
+  - emit_upstart
+  - disk_setup
+  - mounts
+  - ssh-import-id
+  - locale
+  - set-passwords
+  - grub-dpkg
+  - apt-pipelining
+  - apt-configure
+  - package-update-upgrade-install
+  - timezone
+  - runcmd
+cloud_final_modules:
+  - scripts-vendor
+  - scripts-per-once
+  - scripts-per-boot
+  - scripts-per-instance
+  - scripts-user
+  - ssh-authkey-fingerprints
+  - keys-to-console
+  - phone-home
+  - final-message
+  - power-state-change
+mounts:
+  - [ null ]
+EOF
+
+dpkg-reconfigure cloud-init
 
 if dpkg -s ntpdate &>/dev/null; then
     # The patch that fixes the race condition between the nptdate
@@ -498,7 +562,6 @@ net.ipv4.tcp_no_metrics_save = 1
 net.ipv4.tcp_max_syn_backlog = 8192
 net.ipv4.tcp_slow_start_after_idle = 0
 net.ipv4.ip_local_port_range = 1024 65535
-net.ipv4.neigh.default.gc_thresh1 = 0
 EOF
 
 cat <<'EOF' > /etc/sysctl.d/10-network-security.conf
@@ -654,6 +717,9 @@ done
 chown root: /etc/rsyslog.d/50-default.conf
 chmod 644 /etc/rsyslog.d/50-default.conf
 
+# A list of services we want to disable and mask in systemd,
+# as these not only pose a security risk, but also delay the
+# total boot time.
 SERVICES_TO_MASK=(
     'bluetooth.target'
     'dev-hugepages.mount'

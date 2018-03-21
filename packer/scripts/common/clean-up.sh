@@ -24,13 +24,13 @@ dpkg -l | grep '^rc' | awk '{ print $2 }' | \
 
 # Remove not really needed Kernel source packages.
 dpkg -l | awk '{ print $2 }' | \
-    grep -E '(linux-(source|headers)-[0-9]+|linux-aws-(source|headers)-[0-9]+)' | \
-        grep -v "$(uname -r | sed -e 's/\-generic//;s/\-lowlatency//;s/\-aws//')" | \
+    grep -E 'linux-(source|headers)-[0-9]+' | \
+        grep -v "$(uname -r | sed -e 's/\-generic//;s/\-lowlatency//')" | \
             xargs apt-get --assume-yes purge
 
 # Remove old Kernel images that are not the current one.
 dpkg -l | awk '{ print $2 }' | \
-    grep -E 'linux-image-.*-(generic|aws)' | \
+    grep -E 'linux-image-.*-generic' | \
         grep -v "$(uname -r)" | xargs apt-get --assume-yes purge
 
 # Remove development packages.
@@ -41,20 +41,12 @@ dpkg -l | awk '{ print $2 }' | grep -E -- '.*-dev:?.*' | \
 # A list of packages to be purged.
 PACKAGES_TO_PURGE=( $(cat "${COMMON_FILES}/packages-purge.list" 2>/dev/null) )
 
+# Remove packages that are definitely not needed in Triton ...
 PACKAGES_TO_PURGE+=(
     '^libruby[0-9]\.'
     '^ruby[0-9]\.'
     '^ruby-switch$'
     '^rubygems-integration$'
-)
-
-PACKAGES_TO_PURGE+=(
-    'kpartx'
-    'parted'
-    'unzip'
-)
-# Remove packages that are definitely not needed in EC2 ...
-PACKAGES_TO_PURGE+=(
     '^wireless-*'
     'crda'
     'iw'
@@ -62,8 +54,12 @@ PACKAGES_TO_PURGE+=(
     'mdadm'
     'open-iscsi'
     'lvm2'
+    'kpartx'
+    'parted'
+    'unzip'
 )
 
+# Remove LXD and LXCFS as Docker might be installed, if anything.
 PACKAGES_TO_PURGE+=(
     'lxd'
     'lxcfs'
@@ -85,7 +81,7 @@ fi
 # Keep the "tty1" virtual terminal to allow access in a case
 # of the network connection being down and/or inaccessible.
 for file in /etc/init/tty{2,3,4,5,6}.conf; do
-    dpkg-divert --rename $file
+    dpkg-divert --rename "$file"
 done
 
 sed -i -e \
@@ -112,9 +108,6 @@ dpkg-divert --rename /etc/init.d/ondemand
 
 rm -f /usr/sbin/policy-rc.d
 
-rm -f /.dockerenv \
-      /.dockerinit
-
 rm -f /etc/blkid.tab \
       /dev/.blkid.tab
 
@@ -128,9 +121,6 @@ rm -f /etc/network/interfaces.old
 
 rm -f /etc/apt/apt.conf.d/99dpkg \
       /etc/apt/apt.conf.d/00CDMountPoint
-
-rm -f VBoxGuestAdditions_*.iso \
-      VBoxGuestAdditions_*.iso.?
 
 rm -f /root/.bash_history \
       /root/.rnd* \
@@ -146,7 +136,7 @@ rm -rf /root/.cache \
        /root/.ssh \
        /root/*
 
-for user in vagrant ubuntu; do
+for user in root ubuntu; do
     if getent passwd "$user" &>/dev/null; then
         rm -f /home/${user:?}/.bash_history \
               /home/${user:?}/.rnd* \
@@ -186,13 +176,6 @@ sed -i -e \
     '/^.\+fd0/d;/^.\*floppy0/d' \
     /etc/fstab
 
-# Remove entry for "/mnt" from /etc/fstab,
-# we do not want any extra volume (if
-# available) to be mounted automatically.
-sed -i -e \
-    '/^.\+\/mnt/d;/^.\*\/mnt/d' \
-    /etc/fstab
-
 sed -i -e \
     '/^#/!s/\s\+/\t/g' \
     /etc/fstab
@@ -213,14 +196,44 @@ rm -rf /var/lib/cloud/data/scripts \
        /var/lib/cloud/instance \
        /var/lib/cloud/instances/*
 
-rm -rf /var/log/docker \
-       /var/run/docker.sock
-
 rm -rf /var/log/unattended-upgrades
+
+# Prevent storing of the MAC address as part of the network
+# interface details saved by systemd/udev, and disable support
+# for the Predictable (or "consistent") Network Interface Names.
+UDEV_RULES=(
+    '70-persistent-net.rules'
+    '75-persistent-net-generator.rules'
+    '80-net-setup-link.rules'
+    '80-net-name-slot.rules'
+)
+
+for rule in "${UDEV_RULES[@]}"; do
+    rm -f "/etc/udev/rules.d/${rule}"
+    ln -sf /dev/null "/etc/udev/rules.d/${rule}"
+done
+
+# Override systemd configuration ...
+rm -f /etc/systemd/network/99-default.link
+ln -sf /dev/null /etc/systemd/network/99-default.link
 
 rm -rf /dev/.udev \
        /var/lib/{dhcp,dhcp3}/* \
        /var/lib/dhclient/*
+
+# Get rid of this file, alas clout-init will probably
+# create it again automatically so that it can wreck
+# network configuration. These files, sadly cannot be
+# simply a symbolic links to /dev/null, as cloud-init
+# would change permission of the device node to 0644,
+# which is disastrous, every time during the system
+# startup.
+rm -f /etc/udev/rules.d/70-persistent-net.rules
+
+pushd /etc/udev/rules.d &>/dev/null
+mknod .null c 1 3
+ln -sf .null 70-persistent-net.rules
+popd &>/dev/null
 
 # Remove surplus locale (and only retain the English one).
 mkdir -p /tmp/locale
@@ -247,18 +260,6 @@ find /etc /var /usr -type f -name '*~' -print0 | \
 
 find /var/log /var/cache /var/lib/apt -type f -print0 | \
     xargs -0 rm -f
-
-find /etc /root /home -type f -name 'authorized_keys' -print0 | \
-    xargs -0 rm -f
-
-# Only the Vagrant user should keep its SSH key. Everything
-# else will either use the user left form the image creation
-# time, or a new key will be fetched and stored by means of
-# cloud-init, etc.
-if ! getent passwd vagrant &> /dev/null; then
-    find /etc /root /home -type f -name 'authorized_keys' -print0 | \
-        xargs -0 rm -f
-fi
 
 mkdir -p /var/lib/apt/periodic \
          /var/lib/apt/{lists,archives}/partial

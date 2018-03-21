@@ -25,6 +25,14 @@ detect_platform() {
     esac
 }
 
+detect_ubuntu_release() {
+    lsb_release -sc
+}
+
+detect_ubuntu_version() {
+    lsb_release -r | awk '{ print $2 }'
+}
+
 clean_apt_policy() {
     rm -f /usr/sbin/policy-rc.d
 }

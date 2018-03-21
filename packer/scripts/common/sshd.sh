@@ -47,6 +47,7 @@ MACS=(
 
 SSH_SETTINGS+=( "MACs $(join $',' "${MACS[@]}")" )
 
+# Custom settings e.g., logging level, hardening, etc.
 SSH_SETTINGS+=(
     'UseLogin no'
     'TCPKeepAlive no'

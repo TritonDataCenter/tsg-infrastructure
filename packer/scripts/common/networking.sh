@@ -9,9 +9,9 @@ source /var/tmp/helpers/default.sh
 if ufw status &>/dev/null; then
     ufw disable
 
-    # Make sure to disable the ufw service.
-    systemctl stop ufw
-    systemctl disable ufw
+    for option in stop disable; do
+        systemctl "$option" ufw || true
+    done
 fi
 
 iptables -F
