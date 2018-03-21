@@ -1,0 +1,15 @@
+[Unit]
+Description=Consul Server
+After=network.target
+
+[Service]
+User=consul
+Group=consul
+ExecStart=/usr/local/bin/consul agent -ui -bind '{{ GetPrivateIP }}' -config-dir /etc/consul.d/server
+ExecReload=/bin/kill -9 $MAINPID
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=default.target
