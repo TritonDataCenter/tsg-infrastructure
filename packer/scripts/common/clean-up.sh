@@ -11,7 +11,7 @@ readonly COMMON_FILES='/var/tmp/common'
 systemctl daemon-reload
 
 for service in syslog syslog-ng rsyslog systemd-journald; do
-    systemctl stop "$service"
+    systemctl stop "$service" || true
 done
 
 logrotate -f /etc/logrotate.conf || true
