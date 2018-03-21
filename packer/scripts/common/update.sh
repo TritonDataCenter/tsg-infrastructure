@@ -232,8 +232,8 @@ done
 # By default, the "cloud-init" will override the default mirror when run as
 # Triton instance, thus we replace this file only when building our image,
 # and render template overriding current list.
-eval "echo \"$(cat /var/tmp/triton/sources.list.template)\"" \
-    > /etc/apt/sources.list
+eval "echo \"$(cat /var/tmp/triton/sources.list.template)\"" | \
+    tee /etc/apt/sources.list >/dev/null
 
 chown root: /etc/apt/sources.list
 chmod 644 /etc/apt/sources.list
@@ -368,7 +368,7 @@ cat <<EOF > /etc/cloud/cloud.cfg.d/90_overrides.cfg
 datasource_list: [ $(join $',' "${DATA_SOURCES[@]}" | sed -e 's/,/, /g') ]
 EOF
 
-    cat <<'EOF' | tee -a /etc/cloud/cloud.cfg.d/90_overrides.cfg >/dev/null
+cat <<'EOF' | tee -a /etc/cloud/cloud.cfg.d/90_overrides.cfg >/dev/null
 cloud_config_modules:
   - emit_upstart
   - disk_setup
@@ -381,6 +381,7 @@ cloud_config_modules:
   - apt-configure
   - package-update-upgrade-install
   - timezone
+  - disable-ec2-metadata
   - runcmd
 cloud_final_modules:
   - scripts-vendor
@@ -395,6 +396,12 @@ cloud_final_modules:
   - power-state-change
 mounts:
   - [ null ]
+EOF
+
+# Ubuntu specific cloud-init overrides.
+cat <<'EOF' | tee -a /etc/cloud/cloud.cfg.d/90_overrides.cfg >/dev/null
+apt_preserve_sources_list: true
+apt_update: false
 EOF
 
 dpkg-reconfigure cloud-init
@@ -545,6 +552,7 @@ vm.vfs_cache_pressure = 50
 vm.dirty_ratio = 80
 vm.dirty_background_ratio = 5
 vm.dirty_expire_centisecs = 12000
+vm.mmap_min_addr = 65536
 EOF
 
 cat <<EOF | sed -e '/^$/d' > /etc/sysctl.d/10-network.conf
@@ -641,7 +649,7 @@ EOF
 # Adjust the queue size (for a moderate load on the node)
 # accordingly when using Receive Packet Steering (RPS)
 # functionality (setting the "rps_flow_cnt" accordingly).
-for nic in $(ls -1 /sys/class/net | grep -E 'eth*' 2>/dev/null | sort); do
+for nic in $(ls -1 /sys/class/net | grep -E '(eth|net)*' 2>/dev/null | sort); do
     cat <<EOF | tee -a /etc/sysfs.d/network.conf >/dev/null
 class/net/${nic}/tx_queue_len = 5000
 class/net/${nic}/queues/rx-0/rps_cpus = f
@@ -650,12 +658,22 @@ class/net/${nic}/queues/rx-0/rps_flow_cnt = 32768
 EOF
 done
 
-for block in $(ls -1 /sys/block | grep -E '(sd|xvd|dm).*' 2>/dev/null | sort); do
+for block in $(ls -1 /sys/block | grep -E '(sd|vd|dm).*' 2>/dev/null | sort); do
     NR_REQUESTS="block/${block}/queue/nr_requests = 256"
     SCHEDULER="block/${block}/queue/scheduler = noop"
     if [[ $block =~ ^dm.*$ ]]; then
+        # Device Mapper does not support neither
+        # the I/O scheduler nor setting the depth
+        # of the I/O queue.
         NR_REQUESTS=''
         SCHEDULER=''
+    fi
+
+    if [[ $block =~ ^vd.*$ ]]; then
+        # KVM virtio driver can cause an error
+        # while setting the depth of the I/O
+        # queue.
+        NR_REQUESTS=''
     fi
 
     cat <<EOF | sed -e '/^$/d' | tee -a /etc/sysfs.d/disk.conf >/dev/null

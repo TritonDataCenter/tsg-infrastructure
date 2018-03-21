@@ -10,7 +10,19 @@ source /var/tmp/helpers/default.sh
 # connections allowing for Packer to notice and reconnect.
 cat <<'EOF' > /tmp/reboot.sh
 sleep 10
+
 pgrep -f sshd | xargs kill -9
+
+INTERFACE=$(route -n | awk '/^0\./ { print $8 }')
+
+if ifconfig &>/dev/null; then
+    ifconfig $INTERFACE down
+    ifconfig $INTERFACE up
+else
+    ip link set $INTERFACE down
+    ip link set $INTERFACE up
+fi
+
 reboot -f
 EOF
 

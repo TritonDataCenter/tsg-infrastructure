@@ -8,6 +8,7 @@ source /var/tmp/helpers/default.sh
 
 KERNEL_OPTIONS=(
     'quiet'
+    'earlyprintk'
     'divider=10'
     'tsc=reliable'
     'elevator=noop'

@@ -10,7 +10,12 @@ base:
 		-var "version=$(BASE_IMAGE_VERSION)" \
 		ubuntu-16.04-amd64.json
 
-.PHONY: base-validate
+.PHONY: inspect-base
+inspect-base:
+	packer inspect \
+		ubuntu-16.04-amd64.json
+
+.PHONY: validate-base
 validate-base:
 	packer validate \
 		-var "triton_account=$(TRITON_ACCOUNT)" \

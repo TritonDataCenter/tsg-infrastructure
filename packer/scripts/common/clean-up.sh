@@ -41,24 +41,6 @@ dpkg -l | awk '{ print $2 }' | grep -E -- '.*-dev:?.*' | \
 # A list of packages to be purged.
 PACKAGES_TO_PURGE=( $(cat "${COMMON_FILES}/packages-purge.list" 2>/dev/null) )
 
-# Remove packages that are definitely not needed in Triton ...
-PACKAGES_TO_PURGE+=(
-    '^libruby[0-9]\.'
-    '^ruby[0-9]\.'
-    '^ruby-switch$'
-    '^rubygems-integration$'
-    '^wireless-*'
-    'crda'
-    'iw'
-    'linux-firmware'
-    'mdadm'
-    'open-iscsi'
-    'lvm2'
-    'kpartx'
-    'parted'
-    'unzip'
-)
-
 # Remove LXD and LXCFS as Docker might be installed, if anything.
 PACKAGES_TO_PURGE+=(
     'lxd'
@@ -259,6 +241,12 @@ find /etc /var /usr -type f -name '*~' -print0 | \
     xargs -0 rm -f
 
 find /var/log /var/cache /var/lib/apt -type f -print0 | \
+    xargs -0 rm -f
+
+find /etc/alternatives /etc/rc[0-9].d -xtype l -print0 | \
+    xargs -0 rm -f
+
+find /etc /root /home -type f -name 'authorized_keys' -print0 | \
     xargs -0 rm -f
 
 mkdir -p /var/lib/apt/periodic \
