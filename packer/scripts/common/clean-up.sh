@@ -218,49 +218,9 @@ rm -rf /var/log/docker \
 
 rm -rf /var/log/unattended-upgrades
 
-# Prevent storing of the MAC address as part of the network
-# interface details saved by systemd/udev, and disable support
-# for the Predictable (or "consistent") Network Interface Names.
-UDEV_RULES=(
-    '70-persistent-net.rules'
-    '75-persistent-net-generator.rules'
-    '80-net-setup-link.rules'
-    '80-net-name-slot.rules'
-)
-
-for rule in "${UDEV_RULES[@]}"; do
-    rm -f "/etc/udev/rules.d/${rule}"
-    ln -sf /dev/null "/etc/udev/rules.d/${rule}"
-done
-
-# Override systemd configuration ...
-rm -f /etc/systemd/network/99-default.link
-ln -sf /dev/null /etc/systemd/network/99-default.link
-
 rm -rf /dev/.udev \
        /var/lib/{dhcp,dhcp3}/* \
        /var/lib/dhclient/*
-
-# Get rid of this file, alas clout-init will probably
-# create it again automatically so that it can wreck
-# network configuration. These files, sadly cannot be
-# simply a symbolic links to /dev/null, as cloud-init
-# would change permission of the device node to 0644,
-# which is disastrous, every time during the system
-# startup.
-rm -f /etc/network/interfaces.d/50-cloud-init.cfg \
-        /etc/systemd/network/50-cloud-init-eth0.link \
-        /etc/udev/rules.d/70-persistent-net.rules
-
-pushd /etc/network/interfaces.d &>/dev/null
-mknod .null c 1 3
-ln -sf .null 50-cloud-init.cfg
-popd &>/dev/null
-
-pushd /etc/udev/rules.d &>/dev/null
-mknod .null c 1 3
-ln -sf .null 70-persistent-net.rules
-popd &>/dev/null
 
 # Remove surplus locale (and only retain the English one).
 mkdir -p /tmp/locale
