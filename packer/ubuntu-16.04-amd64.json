@@ -14,12 +14,13 @@
       "type": "triton",
       "triton_account": "{{user `triton_account`}}",
       "triton_key_id": "{{user `triton_key_id`}}",
-      "source_machine_package": "g4-highcpu-128M",
+      "source_machine_package": "k4-general-kvm-3.75G",
       "source_machine_image_filter": {
-        "name": "ubuntu-16.04",
+        "name": "ubuntu-certified-16.04",
+        "version": "20180222",
         "most_recent": "true"
       },
-      "ssh_username": "root",
+      "ssh_username": "ubuntu",
       "image_version": "{{user `version`}}",
       "image_name": "{{user `name`}}",
       "image_tags": {
