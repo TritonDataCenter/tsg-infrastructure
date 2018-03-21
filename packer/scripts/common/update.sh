@@ -221,15 +221,6 @@ dpkg-divert --divert /etc/apt/apt.conf.d/99apt-autoremove \
 dpkg-divert --divert /etc/apt/apt.conf.d/99vendor-ubuntu \
             --rename /etc/apt/apt.conf.d/01-vendor-ubuntu
 
-# Render template overriding default list.
-eval "echo \"$(cat /var/tmp/vagrant/sources.list.template)\"" \
-    > /etc/apt/sources.list
-
-chown root: /etc/apt/sources.list
-chmod 644 /etc/apt/sources.list
-
-rm -f /var/tmp/vagrant/sources.list.template
-
 if [[ -f /etc/update-manager/release-upgrades ]]; then
   sed -i -e \
     's/^Prompt=.*$/Prompt=never/' \
