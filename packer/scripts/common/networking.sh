@@ -31,30 +31,3 @@ if ! dpkg -s ethtool &>/dev/null; then
     apt_get_update
     apt-get --assume-yes install ethtool
 fi
-
-if [[ -d /etc/network/interfaces.d ]]; then
-    cat <<'EOF' > /etc/network/interfaces.d/eth0.cfg
-auto eth0
-iface eth0 inet dhcp
-pre-up sleep 2
-post-up ethtool -K eth0 tso off gso off lro off
-EOF
-
-  chown root: /etc/network/interfaces.d/*
-  chmod 644 /etc/network/interfaces.d/*
-
-  cat <<'EOF' > /etc/network/interfaces
-source /etc/network/interfaces.d/*
-
-auto lo
-iface lo inet loopback
-EOF
-else
-    cat <<'EOF' >> /etc/network/interfaces
-pre-up sleep 2
-post-up ethtool -K eth0 tso off gso off lro off
-EOF
-fi
-
-chown root: /etc/network/interfaces
-chmod 644 /etc/network/interfaces
