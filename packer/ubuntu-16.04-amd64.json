@@ -17,6 +17,7 @@
       "triton_url": "{{user `triton_url`}}",
       "triton_account": "{{user `triton_account`}}",
       "triton_key_id": "{{user `triton_key_id`}}",
+      "source_machine_name": "packer-{{user `name`}}-{{timestamp}}",
       "source_machine_package": "{{user `triton_package`}}",
       "source_machine_image_filter": {
         "name": "ubuntu-certified-16.04",
@@ -24,7 +25,7 @@
       },
       "ssh_username": "ubuntu",
       "image_version": "{{user `version`}}",
-      "image_name": "{{user `name`}}",
+      "image_name": "{{user `name`}}-{{timestamp}}",
       "image_description": "{{user `description`}}",
       "image_tags": {
         "name": "{{user `name`}}",
