@@ -25,7 +25,7 @@
       },
       "ssh_username": "ubuntu",
       "image_version": "{{user `version`}}",
-      "image_name": "{{user `name`}}-{{timestamp}}",
+      "image_name": "{{user `name`}}",
       "image_description": "{{user `description`}}",
       "image_tags": {
         "name": "{{user `name`}}",
