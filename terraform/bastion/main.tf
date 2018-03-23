@@ -1,7 +1,15 @@
 provider "triton" {}
 
+terraform {
+  required_version = ">= 0.11.0"
+  backend "manta" {
+    path = "tsg-bastion"
+  }
+}
+
 data "triton_image" "ubuntu" {
-  name        = "ubuntu-16.04-amd64"
+  name        = "tsg-base"
+  version     = "0.1.0"
   most_recent = true
 }
 
