@@ -1,6 +1,6 @@
 {
   "variables": {
-    "name": "nomad-client",
+    "name": "{{user `name`}}",
     "description": "",
     "nomad_version": "",
     "nomad_deployment_type": "",

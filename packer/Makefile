@@ -42,6 +42,7 @@ validate-nomad-server:
 	packer validate \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "name=nomad-server" \
 		-var "nomad_version=$(NOMAD_VERSION)" \
 		-var "nomad_deployment_type=server" \
 		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
@@ -53,6 +54,7 @@ validate-nomad-client:
 	packer validate \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "name=nomad-client" \
 		-var "nomad_version=$(NOMAD_VERSION)" \
 		-var "nomad_deployment_type=client" \
 		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
@@ -74,6 +76,7 @@ nomad-server:
 	packer build \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "name=nomad-server" \
 		-var "nomad_version=$(NOMAD_VERSION)" \
 		-var "nomad_deployment_type=server" \
 		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
@@ -85,6 +88,7 @@ nomad-client:
 	packer build \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "name=nomad-client" \
 		-var "nomad_version=$(NOMAD_VERSION)" \
 		-var "nomad_deployment_type=client" \
 		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
