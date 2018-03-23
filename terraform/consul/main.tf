@@ -1,5 +1,12 @@
 provider "triton" {}
 
+terraform {
+  required_version = ">= 0.11.0"
+  backend "manta" {
+    path = "tsg-consul"
+  }
+}
+
 resource "triton_machine" "consul_server_blue" {
   count            = "${var.consul_server_count}"
   name             = "${format("consul%02d", count.index + 1)}"
