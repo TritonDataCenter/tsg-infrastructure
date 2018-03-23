@@ -2,12 +2,7 @@ log_level = "DEBUG"
 data_dir = "/mnt/nomad"
 datacenter = "TRITON_DC"
 leave_on_terminate = true
-
-advertise {
-  http = "{{ GetPrivateIP }}:4646"
-  rpc  = "{{ GetPrivateIP }}:4647"
-  serf = "{{ GetPrivateIP }}:4648"
-}
+bind_addr = "{{ GetPrivateIP }}"
 
 server {
   enabled = true
