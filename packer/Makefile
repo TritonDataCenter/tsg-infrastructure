@@ -2,6 +2,7 @@ TRITON_ACCOUNT ?= ""
 TRITON_KEY_ID ?= ""
 BASE_IMAGE_VERSION ?= "0.1.0"
 CONSUL_VERSION ?= "1.0.6"
+NOMAD_VERSION ?= "0.7.1"
 SOURCE_IMAGE_VERSION ?= "0.1.0"
 SOURCE_IMAGE_NAME ?= "ubuntu-16.04-amd64"
 
@@ -36,6 +37,28 @@ validate-consul:
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		consul.json
 
+.PHONY: validate-nomad-server
+validate-nomad-server:
+	packer validate \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "nomad_version=$(NOMAD_VERSION)" \
+		-var "nomad_deployment_type=server" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		nomad.json
+
+.PHONY: validate-nomad-client
+validate-nomad-client:
+	packer validate \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "nomad_version=$(NOMAD_VERSION)" \
+		-var "nomad_deployment_type=client" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		nomad.json
+
 .PHONY: consul
 consul:
 	packer build \
@@ -45,6 +68,28 @@ consul:
 		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		consul.json
+
+.PHONY: nomad-server
+nomad-server:
+	packer build \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "nomad_version=$(NOMAD_VERSION)" \
+		-var "nomad_deployment_type=server" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		nomad.json
+
+.PHONY: nomad-client
+nomad-client:
+	packer build \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "nomad_version=$(NOMAD_VERSION)" \
+		-var "nomad_deployment_type=client" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		nomad.json
 
 .PHONY: help
 help:

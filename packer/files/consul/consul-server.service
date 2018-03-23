@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=consul
 Group=consul
-ExecStart=/usr/local/bin/consul agent -ui -bind '{{ GetPrivateIP }}' -config-dir /etc/consul.d/server
+ExecStart=/usr/local/bin/consul agent -ui -bind '{{ GetPrivateIP }}' -client '{{ GetPrivateIP }}' -config-dir /etc/consul.d/server
 ExecReload=/bin/kill -9 $MAINPID
 KillSignal=SIGINT
 Restart=on-failure
