@@ -17,6 +17,10 @@ resource "triton_machine" "consul_server" {
     services = ["${var.consul_cns_tag}"]
   }
 
+  tags {
+    name = "${format("tsg-consul-%02d", count.index + 1)}"
+  }
+
   affinity    = ["instance!=consul*"]
   user_script = "${element(
                    data.template_file.user_data.*.rendered,
