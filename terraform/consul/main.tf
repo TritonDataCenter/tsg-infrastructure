@@ -7,9 +7,9 @@ terraform {
   }
 }
 
-resource "triton_machine" "consul_server_blue" {
+resource "triton_machine" "consul_server" {
   count            = "${var.consul_server_count}"
-  name             = "${format("consul%02d", count.index + 1)}"
+  name             = "${format("tsg-consul-%02d", count.index + 1)}"
   package          = "${var.consul_instance_package}"
   image            = "${data.triton_image.consul_server.id}"
 
@@ -18,7 +18,10 @@ resource "triton_machine" "consul_server_blue" {
   }
 
   affinity    = ["instance!=consul*"]
-  user_script = "${data.template_file.user_data.rendered}"
+  user_script = "${element(
+                   data.template_file.user_data.*.rendered,
+                   count.index)}"
+
   networks    = ["${data.triton_network.private.id}",
                  "${data.triton_network.public.id}"]
 }
@@ -42,8 +45,10 @@ data "triton_account" "main" {}
 data "triton_datacenter" "current" {}
 
 data "template_file" "user_data" {
+  count = "${var.consul_server_count}"
   template = "${file("instance-user.conf")}"
   vars {
+    hostname = "${format("tsg-consul-%02d", count.index + 1)}"
     dc = "${data.triton_datacenter.current.name}"
     cns_url = "${format("%s.svc.%s.%s.cns.joyent.com", var.consul_cns_tag, data.triton_account.main.id, data.triton_datacenter.current.name)}"
   }
