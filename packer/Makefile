@@ -4,7 +4,7 @@ BASE_IMAGE_VERSION ?= "0.1.0"
 CONSUL_VERSION ?= "1.0.6"
 NOMAD_VERSION ?= "0.7.1"
 SOURCE_IMAGE_VERSION ?= "0.1.0"
-SOURCE_IMAGE_NAME ?= "ubuntu-16.04-amd64"
+SOURCE_IMAGE_NAME ?= "tsg-base"
 
 .PHONY: base
 base:
@@ -12,12 +12,12 @@ base:
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
 		-var "version=$(BASE_IMAGE_VERSION)" \
-		ubuntu-16.04-amd64.json
+		tsg-base.json
 
 .PHONY: inspect-base
 inspect-base:
 	packer inspect \
-		ubuntu-16.04-amd64.json
+		tsg-base.json
 
 .PHONY: validate-base
 validate-base:
@@ -25,7 +25,7 @@ validate-base:
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
 		-var "version=$(BASE_IMAGE_VERSION)" \
-		ubuntu-16.04-amd64.json
+		tsg-base.json
 
 .PHONY: validate-consul
 validate-consul:
