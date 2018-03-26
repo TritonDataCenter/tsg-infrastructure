@@ -31,6 +31,12 @@ data "template_cloudinit_config" "mod" {
     content      = "${coalesce(var.cloud_config, join("",
                       data.template_file.mod.*.rendered))}"
   }
+
+  part {
+    filename     = "cloud_init_user_data.sh"
+    content_type = "text/x-shellscript"
+    content      = "${var.cloud_init_user_data}"
+  }
 }
 
 resource "triton_machine" "mod" {

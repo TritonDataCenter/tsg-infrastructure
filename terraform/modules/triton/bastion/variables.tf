@@ -18,6 +18,10 @@ variable "cloud_config" {
   default = ""
 }
 
+variable "cloud_init_user_data" {
+  default = ""
+}
+
 variable "firewall_enabled" {
   default = false
 }
