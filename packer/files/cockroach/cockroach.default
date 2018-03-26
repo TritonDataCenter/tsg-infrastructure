@@ -1,0 +1,18 @@
+# Defaults file for CockroachDB.
+#
+# The hostname or IP address to listen on (default: 127.0.0.1).
+# HOST=""
+#
+# The internal and client communication Port to bind to (default: 26257).
+# PORT=""
+#
+# Admin UI HTTP port to bind to (default: 8080).
+# HTTP_PORT=""
+#
+# The file path to a storage device and, optionally, store attributes
+# and maximum size (default: /var/lib/cockroach).
+# STORE=""
+#
+# Additional options, see cockroach start --help
+# Default: --insecure --cache 25% --max-sql-memory 25%
+# ADDITIONAL_ARGS=""
