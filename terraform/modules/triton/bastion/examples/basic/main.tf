@@ -39,8 +39,6 @@ module "bastion" {
     "${formatlist("subnet %s", var.allowed_cidr_blocks)}"
   ]
 
-
-
   tags = {
     "description" = "Example Bastion instance"
   }

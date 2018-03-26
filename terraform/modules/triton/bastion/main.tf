@@ -14,10 +14,22 @@ data "triton_datacenter" "mod" {}
 data "template_file" "mod" {
   count = "${var.instances_count}"
 
-  template = "${file(format("%s/templates/%s", path.module, "user-script.sh.tpl"))}"
+  template = "${file(format("%s/templates/%s", path.module, "cloud-config.tpl"))}"
 
   vars {
     hostname = "${format("%s-bastion-%02d", var.name, count.index + 1)}"
+  }
+}
+
+data "template_cloudinit_config" "mod" {
+  gzip          = false
+  base64_encode = false
+
+  part {
+    filename     = "cloud-config.cfg"
+    content_type = "text/cloud-config"
+    content      = "${coalesce(var.cloud_config, join("",
+                      data.template_file.mod.*.rendered))}"
   }
 }
 
@@ -28,11 +40,10 @@ resource "triton_machine" "mod" {
   package = "${var.package}"
   image   = "${var.image}"
 
-  user_script = "${coalesce(var.user_script, element(
-                   data.template_file.mod.*.rendered,
-                   count.index))}"
+  cloud_config = "${coalesce(var.cloud_config, join("",
+                    data.template_cloudinit_config.mod.*.rendered))}"
 
-  cloud_config = "${var.cloud_config}"
+  user_script = "${var.user_script}"
 
   firewall_enabled = "${var.firewall_enabled}"
 
