@@ -42,11 +42,11 @@ readonly HEADER="$BUILD_NAME (${BUILDER_TYPE})"
 readonly VERSION="Version: ${VERSION}"
 
 printf "\n%*s\n" "$(_indent "$HEADER")" "$HEADER"
-cat <<'EOS'
-                   _____ _____ _____ _____ _____ _____
-                  |_   _| __  |     |_   _|     |   | |
-                    | | |    -|-   -| | | |  |  | | | |
-                    |_| |__|__|_____| |_| |_____|_|___|
+cat <<'EOS' | base64 -d
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBfX19fXyBfX19fXyBfX19fXwogICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgfF8gICBffCAgIF9ffCAgIF9ffAogICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICB8IHwgfF9fICAgfCAgfCAgfAogICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICB8X3wgfF9fX19ffF9fX19ffAo=
 EOS
 printf "%*s\n%*s\n" \
   "$(_indent "$BUILD_DATE")" "$BUILD_DATE" \
