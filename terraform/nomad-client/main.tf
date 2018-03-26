@@ -25,8 +25,7 @@ resource "triton_machine" "nomad_client" {
   user_script = "${element(
                    data.template_file.user_data.*.rendered,
                    count.index)}"
-  networks    = ["${data.triton_network.private.id}",
-                 "${data.triton_network.public.id}"]
+  networks    = ["${data.triton_network.private.id}"]
 }
 
 data "triton_image" "nomad_client" {
@@ -37,10 +36,6 @@ data "triton_image" "nomad_client" {
 
 data "triton_network" "private" {
   name = "Joyent-SDC-Private"
-}
-
-data "triton_network" "public" {
-  name = "Joyent-SDC-Public"
 }
 
 data "triton_account" "main" {}
