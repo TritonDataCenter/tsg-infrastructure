@@ -26,8 +26,7 @@ resource "triton_machine" "consul_server" {
                    data.template_file.user_data.*.rendered,
                    count.index)}"
 
-  networks    = ["${data.triton_network.private.id}",
-                 "${data.triton_network.public.id}"]
+  networks    = ["${data.triton_network.private.id}"]
 }
 
 data "triton_image" "consul_server" {
@@ -38,10 +37,6 @@ data "triton_image" "consul_server" {
 
 data "triton_network" "private" {
   name = "Joyent-SDC-Private"
-}
-
-data "triton_network" "public" {
-  name = "Joyent-SDC-Public"
 }
 
 data "triton_account" "main" {}
