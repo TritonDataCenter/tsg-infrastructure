@@ -1,0 +1,9 @@
+{
+    "server": false,
+    "datacenter": "TRITON_URL",
+    "data_dir": "/mnt/consul/data",
+    "encrypt": "Bm4qFPeEKR+0XvWKA5/d7Q==",
+    "log_level": "INFO",
+    "enable_syslog": true,
+    "start_join": ["TRITON_CONSUL_CNS_URL"]
+}

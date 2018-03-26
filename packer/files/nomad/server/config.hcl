@@ -15,5 +15,4 @@ consul {
   client_service_name = "nomad-client"
   client_auto_join = true
   auto_advertise = true
-  address = "TRITON_CONSUL_CNS_URL:8500"
 }

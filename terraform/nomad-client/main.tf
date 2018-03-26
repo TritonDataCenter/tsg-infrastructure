@@ -53,6 +53,7 @@ data "template_file" "user_data" {
   vars {
     hostname = "${format("tsg-nomad-client-%02d", count.index + 1)}"
     dc = "${data.triton_datacenter.current.name}"
-    cns_url = "${format("%s.svc.%s.%s.cns.joyent.com", var.consul_cns_tag, data.triton_account.main.id, data.triton_datacenter.current.name)}"
+    nomad_cns_url = "${format("nomadserver.svc.%s.%s.cns.joyent.com", data.triton_account.main.id, data.triton_datacenter.current.name)}"
+    consul_cns_url = "${format("%s.svc.%s.%s.cns.joyent.com", var.consul_cns_tag, data.triton_account.main.id, data.triton_datacenter.current.name)}"
   }
 }

@@ -38,6 +38,11 @@
   "provisioners": [
     {
       "type": "file",
+      "source": "files/consul-client/",
+      "destination": "/tmp"
+    },
+    {
+      "type": "file",
       "source": "files/nomad/{{user `nomad_deployment_type`}}/",
       "destination": "/tmp"
     },
@@ -46,6 +51,13 @@
       "execute_command": "{{ .Vars }} sudo -H -S -E -n bash '{{ .Path }}'",
       "scripts": [
         "scripts/nomad/packages.sh"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -H -S -E -n bash '{{ .Path }}'",
+      "scripts": [
+        "scripts/consul-client/packages.sh"
       ]
     }
   ]
