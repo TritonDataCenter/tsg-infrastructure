@@ -3,6 +3,7 @@
   "variables": {
     "name": "tsg-cockroach",
     "description": "Triton Service Groups - CockroachDB",
+    "version": "",
     "cockroach_version": "",
     "triton_url": "{{env `TRITON_URL`}}",
     "triton_account": "{{env `TRITON_ACCOUNT`}}",
@@ -57,7 +58,7 @@
         "BUILD_NUMBER={{user `build_number`}}",
         "PACKER_BUILD_NAME={{user `name`}}",
         "PACKER_BUILD_TIMESTAMP={{timestamp}}",
-        "PACKER_BUILD_VERSION={{user `version`}}",
+        "PACKER_BUILD_VERSION={{if eq (user `version`) ``}}{{user `cockroach_version`}}{{else}}{{user `version`}}{{end}}",
         "COCKROACH_VERSION={{user `cockroach_version`}}"
       ],
       "execute_command": "{{ .Vars }} sudo -H -S -E -n bash {{if eq (user `debug`) `true` }}-x{{end}} '{{ .Path }}'",

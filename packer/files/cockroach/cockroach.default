@@ -10,9 +10,13 @@
 # HTTP_PORT=""
 #
 # The file path to a storage device and, optionally, store attributes
-# and maximum size (default: /var/lib/cockroach).
+# and maximum size (default: /var/lib/cockroach,size=90%).
 # STORE=""
 #
+# Run in insecure mode. WARNING! There is no network encryption nor
+# authentication, and thus no confidentiality.
+# INSECURE=""
+#
 # Additional options, see cockroach start --help
-# Default: --insecure --cache 25% --max-sql-memory 25%
+# Default: --cache 25% --max-sql-memory 25%
 # ADDITIONAL_ARGS=""

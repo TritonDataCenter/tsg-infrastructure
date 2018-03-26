@@ -6,21 +6,31 @@ After=network.target
 Environment="HOST=127.0.0.1"
 Environment="PORT=26257"
 Environment="HTTP_PORT=8080"
-Environment="STORE=/var/log/cockroach"
-Environment="ADDITIONAL_ARGS=--insecure --cache 25% --max-sql-memory 25%"
+Environment="STORE=/var/lib/cockroach,size=90%"
+Environment="ADDITIONAL_ARGS=--cache 25% --max-sql-memory 25%"
 EnvironmentFile=-/etc/default/cockroach
+PermissionsStartOnly=true
+ExecStartPre=-/bin/mkdir -p /var/run/cockroach
+ExecStartPre=-/bin/chown cockroach:cockroach /var/run/cockroach
+ExecStartPre=-/bin/chmod 700 /var/run/cockroach
+ExecStartPre=/bin/bash -c \
+	"[[ -n "$$INSECURE" ]] && echo INSECURE='--insecure' > /var/run/cockroach/.environment"
+EnvironmentFile=-/var/run/cockroach/.environment
 ExecStart=/usr/local/bin/cockroach start \
-        --no-color \
-        --host ${HOST} \
-        --port ${PORT} \
-        --http-port ${HTTP_PORT} \
-        --log-dir /var/log/cockroach \
-        --store $STORE \
-        $ADDITIONAL_ARGS
+	--no-color \
+	--host ${HOST} \
+	--port ${PORT} \
+	--http-port ${HTTP_PORT} \
+	--log-dir /var/log/cockroach \
+	--store $STORE \
+	$ADDITIONAL_ARGS \
+	$INSECURE
 ExecStop=/usr/local/bin/cockroach quit \
-        --host ${HOST} \
-        --port ${PORT} \
-        $ADDITIONAL_ARGS
+	--host ${HOST} \
+	--port ${PORT} \
+	$INSECURE
+ExecStop=-/bin/rm -f \
+	/var/run/cockroach/.environment
 User=cockroach
 Group=cockroach
 LimitNOFILE=1048576
