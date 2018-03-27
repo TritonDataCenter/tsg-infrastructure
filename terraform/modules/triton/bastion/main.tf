@@ -22,14 +22,17 @@ data "template_file" "mod" {
 }
 
 data "template_cloudinit_config" "mod" {
+  count = "${var.instances_count}"
+
   gzip          = false
   base64_encode = false
 
   part {
     filename     = "cloud-config.cfg"
     content_type = "text/cloud-config"
-    content      = "${coalesce(var.cloud_config, join("",
-                      data.template_file.mod.*.rendered))}"
+    content      = "${coalesce(var.cloud_config, element(
+                      data.template_file.mod.*.rendered,
+                      count.index))}"
   }
 
   part {
@@ -46,8 +49,9 @@ resource "triton_machine" "mod" {
   package = "${var.package}"
   image   = "${var.image}"
 
-  cloud_config = "${coalesce(var.cloud_config, join("",
-                    data.template_cloudinit_config.mod.*.rendered))}"
+  cloud_config = "${coalesce(var.cloud_config, element(
+                    data.template_cloudinit_config.mod.*.rendered,
+                    count.index))}"
 
   user_script = "${var.user_script}"
 
