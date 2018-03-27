@@ -14,7 +14,7 @@ ExecStartPre=-/bin/mkdir -p /var/run/cockroach
 ExecStartPre=-/bin/chown cockroach:cockroach /var/run/cockroach
 ExecStartPre=-/bin/chmod 700 /var/run/cockroach
 ExecStartPre=/bin/bash -c \
-	"[[ -n "$$INSECURE" ]] && echo INSECURE='--insecure' > /var/run/cockroach/.environment"
+	". /etc/default/cockroach; if [[ -n $$INSECURE ]]; then echo INSECURE='--insecure' > /var/run/cockroach/.environment; fi"
 EnvironmentFile=-/var/run/cockroach/.environment
 ExecStart=/usr/local/bin/cockroach start \
 	--no-color \
@@ -25,11 +25,13 @@ ExecStart=/usr/local/bin/cockroach start \
 	--store $STORE \
 	$ADDITIONAL_ARGS \
 	$INSECURE
+ExecStartPost=-/bin/rm -f \
+	/var/run/cockroach/.environment
 ExecStop=/usr/local/bin/cockroach quit \
 	--host ${HOST} \
 	--port ${PORT} \
 	$INSECURE
-ExecStop=-/bin/rm -f \
+ExecStopPost=-/bin/rm -f \
 	/var/run/cockroach/.environment
 User=cockroach
 Group=cockroach

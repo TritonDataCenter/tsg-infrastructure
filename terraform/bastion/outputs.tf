@@ -6,6 +6,10 @@ output "primaryip" {
   value = ["${module.bastion.primaryip}"]
 }
 
-output "domain_names" {
-  value = ["${module.bastion.domain_names}"]
+output "public_cns_domain" {
+  value = "${module.bastion.public_cns_domain}"
+}
+
+output "private_cns_domain" {
+  value = "${module.bastion.private_cns_domain}"
 }

@@ -10,7 +10,7 @@ apt_get_update() {
     local update_stamp='/var/lib/apt/periodic/update-success-stamp'
     if [[ ! -f $update_stamp ]] || \
        (( $(date +%s) - $(date -r $update_stamp +%s) > 900 )); then
-        apt-get --assume-yes update 1>/dev/null
+        apt-get --assume-yes update >/dev/null
     fi
 }
 

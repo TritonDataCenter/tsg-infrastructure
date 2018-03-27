@@ -6,6 +6,10 @@ output "package" {
   value = "${var.package}"
 }
 
+output "insecure" {
+  value = "${var.insecure ? "true" : "false"}"
+}
+
 output "cns_service_tag" {
   value = "${var.cns_service_tag}"
 }

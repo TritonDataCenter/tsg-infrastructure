@@ -247,7 +247,7 @@ if [[ -f /etc/update-manager/release-upgrades ]]; then
 fi
 
 # Update everything.
-apt-get --assume-yes update 1>/dev/null
+apt-get --assume-yes update >/dev/null
 
 export UCF_FORCE_CONFFNEW=1
 ucf --purge /boot/grub/menu.lst
@@ -290,7 +290,7 @@ en_US.ISO-8859-1 ISO-8859-1
 en_US.ISO-8859-15 ISO-8859-15
 EOF
 ) | tee /var/lib/locales/supported.d/en \
-        /etc/locale.gen 1>/dev/null
+        /etc/locale.gen >/dev/null
 
 cat <<'EOF' > /var/lib/locales/supported.d/local
 en_US.UTF-8 UTF-8

@@ -16,7 +16,7 @@ data "template_file" "mod" {
   template = "${file(format("%s/templates/%s", path.module, "cloud-config.tpl"))}"
 
   vars {
-    hostname = "${format("%s-bastion-%02d", var.name, count.index + 1)}"
+    hostname = "${format("%s-cockroach-%02d", var.name, count.index + 1)}"
   }
 }
 
@@ -46,7 +46,7 @@ data "template_cloudinit_config" "mod" {
 resource "triton_machine" "mod" {
   count = "${var.instances_count}"
 
-  name    = "${format("%s-bastion-%02d", var.name, count.index + 1)}"
+  name    = "${format("%s-cockroach-%02d", var.name, count.index + 1)}"
   package = "${var.package}"
   image   = "${var.image}"
 
@@ -65,7 +65,7 @@ resource "triton_machine" "mod" {
   ]
 
   affinity = [
-    "${format("instance!=~/^%s-bastion-\\d+/", var.name)}"
+    "${format("instance!=~/^%s-cockroach-\\d+/", var.name)}"
   ]
 
   cns {
@@ -77,17 +77,45 @@ resource "triton_machine" "mod" {
   metadata = "${var.metadata}"
 
   tags = "${merge(map(
-      "name", "${format("%s-bastion-%02d", var.name, count.index + 1)}"
+      "name", "${format("%s-cockroach-%02d", var.name, count.index + 1)}"
     ), var.tags)}"
 }
 
-resource "triton_firewall_rule" "mod" {
-  count = "${var.firewall_enabled ? length(var.firewall_targets_list) : 0}"
+resource "random_shuffle" "mod" {
+  input        = ["${triton_machine.mod.*.primaryip}"]
+  result_count = 1
+}
 
-  enabled     = true
-  description = "${format("Allow SSH to Bastion from %s - %s",
-                   var.firewall_targets_list[count.index],
-                   var.name)}"
+resource "null_resource" "mod" {
+  count = "${var.instances_count}"
 
-  rule = "FROM ${var.firewall_targets_list[count.index]} TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 22"
+  triggers {
+    cockroach_instance_ids = "${join(",", triton_machine.mod.*.id)}"
+  }
+
+  connection {
+    type         = "ssh"
+    user         = "ubuntu"
+    host         = "${element(triton_machine.mod.*.primaryip, count.index)}"
+    bastion_host = "${var.bastion_host}"
+    timeout      = "120s"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+NODES='${join(",", sort(flatten(triton_machine.mod.*.ips)))}'
+INSECURE='${var.insecure ? "true" : "false"}'
+LEADER='${element(random_shuffle.mod.result, 0)}'
+EOF
+
+    destination = "/var/tmp/.cockroach-cluster"
+  }
+
+  provisioner "remote-exec" {
+    scripts = [
+      "${format("%s/files/%s", path.module, "volume.sh")}",
+      "${format("%s/files/%s", path.module, "configure.sh")}",
+      "${format("%s/files/%s", path.module, "start.sh")}",
+    ]
+  }
 }

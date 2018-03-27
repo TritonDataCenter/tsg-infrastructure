@@ -25,7 +25,6 @@ apt_get_update
 
 for package in "${PACKAGES[@]}"; do
     apt-get --assume-yes install "$package"
-    sleep 2
 done
 
 systemctl stop ntp || true

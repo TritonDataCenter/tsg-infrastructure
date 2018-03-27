@@ -10,9 +10,21 @@ readonly COCKROACH_FILES='/var/tmp/cockroach'
 
 [[ -d $COCKROACH_FILES ]] || mkdir -p "$COCKROACH_FILES"
 
-# The version 1.1.6 is currently the recommended version.
+apt_get_update
+
+# Dependencies needed by CockroachDB, etc.
+PACKAGES=(
+    'ntpdate'
+    'xfsprogs'
+)
+
+for package in "${PACKAGES[@]}"; do
+    apt-get --assume-yes install "$package"
+done
+
+# The version 1.1.7 is currently the recommended stable version.
 if [[ -z $COCKROACH_VERSION ]]; then
-    COCKROACH_VERSION='1.1.6'
+    COCKROACH_VERSION='1.1.7'
 fi
 
 ARCHIVE_FILE="cockroach-v${COCKROACH_VERSION}.$(detect_os)-$(detect_platform).tgz"
@@ -77,5 +89,11 @@ EOF
 
 chown root: /etc/sysctl.d/99-cockroach.conf
 chmod 644 /etc/sysctl.d/99-cockroach.conf
+
+cockroach gen autocomplete \
+    --out=/etc/bash_completion.d/cockroach
+
+chown root: /etc/bash_completion.d/cockroach
+chmod 644 /etc/bash_completion.d/cockroach
 
 rm -Rf $COCKROACH_FILES
