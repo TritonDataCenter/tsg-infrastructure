@@ -11,7 +11,7 @@ module "bastion" {
   image   = "${data.triton_image.ubuntu.id}"
   package = "${var.package}"
 
-  firewall_enabled = true
+  firewall_enabled = "${var.firewall_enabled}"
 
   networks = [
     "${data.terraform_remote_state.networking.public_network_id}",
