@@ -14,7 +14,7 @@ sed -i -e \
 
 grep -E "$ATTACHED_VOLUME" /proc/mounts | \
     awk '{ print length, $2 }' | \
-        sort -gr | cut -d' ' -f2- | xargs umount -f || true
+        sort -gr | cut -d' ' -f2- | xargs umount -f &>/dev/null || true
 
 for directory in /mnt /srv; do
     if [[ -d $directory ]]; then
@@ -28,9 +28,9 @@ for directory in /mnt /srv; do
     chmod 755 "$directory"
 done
 
-wipefs -a$(wipefs -f &>/dev/null && echo 'f') $ATTACHED_VOLUME
+wipefs -a$(wipefs -f &>/dev/null && echo 'f') $ATTACHED_VOLUME >/dev/null
 
-mkfs.xfs -q -L '/srv' -f $ATTACHED_VOLUME >/dev/null
+mkfs.xfs -q -K -L '/srv' -f $ATTACHED_VOLUME
 
 cat <<EOS | sed -e 's/\s\+/\t/g' | tee -a /etc/fstab >/dev/null
 $ATTACHED_VOLUME /srv xfs defaults,noatime,nodiratime,nobarrier,nofail,comment=cloudconfig 0 2
@@ -48,7 +48,6 @@ chown root: /etc/fstab
 chmod 644 /etc/fstab
 
 mount /srv
-xfs_info $ATTACHED_VOLUME
 
 sync
 sync

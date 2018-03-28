@@ -10,12 +10,22 @@ output "cns_service_tag" {
   value = "${var.cns_service_tag}"
 }
 
+output "networks" {
+  value = [
+    "${var.networks}"
+  ]
+}
+
 output "ips" {
-  value = ["${triton_machine.mod.*.ips}"]
+  value = [
+    "${triton_machine.mod.*.ips}"
+  ]
 }
 
 output "primaryip" {
-  value = ["${triton_machine.mod.*.primaryip}"]
+  value = [
+    "${triton_machine.mod.*.primaryip}"
+  ]
 }
 
 output "public_cns_domain" {

@@ -20,11 +20,11 @@ fetch_origin() {
     )
 
     local tries=0
-    local origin=''
+    local origin=
     local host="${hosts[$(( RANDOM % ${#hosts[@]} ))]}"
 
     # Try to get an IP address but give up after trying 5 times.
-    while [[ -z ${origin} ]] && (( tries < 5 )); do
+    while [[ -z $origin ]] && (( tries < 5 )); do
         set +e
         if which curl &>/dev/null; then
             origin=$(curl --max-time 5 --user-agent 'curl/1.0.0' -L "$host" 2>/dev/null)

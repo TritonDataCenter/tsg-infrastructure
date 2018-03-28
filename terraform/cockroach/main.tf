@@ -4,14 +4,6 @@ data "triton_image" "ubuntu" {
   most_recent = true
 }
 
-data "triton_network" "public" {
-  name = "Joyent-SDC-Public"
-}
-
-data "triton_network" "private" {
-  name = "Joyent-SDC-Private"
-}
-
 module "cockroach" {
   source = "../modules/triton/cockroach"
 
@@ -24,7 +16,6 @@ module "cockroach" {
   bastion_host = "${data.terraform_remote_state.bastion.public_cns_domain}"
 
   networks = [
-    "${data.triton_network.public.id}",
-    "${data.triton_network.private.id}"
+    "${data.terraform_remote_state.networking.private_network_id}"
   ]
 }

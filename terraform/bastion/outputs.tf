@@ -1,9 +1,19 @@
+output "networks" {
+  value = [
+    "${module.bastion.networks}"
+  ]
+}
+
 output "ips" {
-  value = ["${module.bastion.ips}"]
+  value = [
+    "${module.bastion.ips}"
+  ]
 }
 
 output "primaryip" {
-  value = ["${module.bastion.primaryip}"]
+  value = [
+    "${module.bastion.primaryip}"
+  ]
 }
 
 output "public_cns_domain" {

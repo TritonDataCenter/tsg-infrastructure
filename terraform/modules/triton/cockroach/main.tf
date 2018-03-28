@@ -82,7 +82,10 @@ resource "triton_machine" "mod" {
 }
 
 resource "random_shuffle" "mod" {
-  input        = ["${triton_machine.mod.*.primaryip}"]
+  input = [
+    "${triton_machine.mod.*.primaryip}"
+  ]
+
   result_count = 1
 }
 

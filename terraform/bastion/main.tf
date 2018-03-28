@@ -4,14 +4,6 @@ data "triton_image" "ubuntu" {
   most_recent = true
 }
 
-data "triton_network" "public" {
-  name = "Joyent-SDC-Public"
-}
-
-data "triton_network" "private" {
-  name = "Joyent-SDC-Private"
-}
-
 module "bastion" {
   source = "../modules/triton/bastion"
 
@@ -22,8 +14,8 @@ module "bastion" {
   firewall_enabled = true
 
   networks = [
-    "${data.triton_network.public.id}",
-    "${data.triton_network.private.id}"
+    "${data.terraform_remote_state.networking.public_network_id}",
+    "${data.terraform_remote_state.networking.private_network_id}"
   ]
 
   firewall_targets_list = [
