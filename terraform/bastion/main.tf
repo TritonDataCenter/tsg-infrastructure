@@ -1,15 +1,6 @@
-provider "triton" {}
-
-terraform {
-  required_version = ">= 0.11.0"
-  backend "manta" {
-    path = "tsg-bastion"
-  }
-}
-
 data "triton_image" "ubuntu" {
-  name        = "tsg-base"
-  version     = "0.1.0"
+  name        = "${var.image_name}"
+  version     = "${var.image_version}"
   most_recent = true
 }
 
@@ -24,9 +15,9 @@ data "triton_network" "private" {
 module "bastion" {
   source = "../modules/triton/bastion"
 
-  name    = "tsg"
+  name    = "${var.name}"
   image   = "${data.triton_image.ubuntu.id}"
-  package = "k4-general-kvm-3.75G"
+  package = "${var.package}"
 
   firewall_enabled = true
 
@@ -37,6 +28,8 @@ module "bastion" {
 
   firewall_targets_list = [
     "all vms",
-    "any"
+    "any",
+    "${formatlist("ip %s", var.allowed_ips)}",
+    "${formatlist("subnet %s", var.allowed_cidr_blocks)}"
   ]
 }

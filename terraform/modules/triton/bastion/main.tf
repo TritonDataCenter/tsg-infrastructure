@@ -22,14 +22,25 @@ data "template_file" "mod" {
 }
 
 data "template_cloudinit_config" "mod" {
+  count = "${var.instances_count}"
+
   gzip          = false
   base64_encode = false
 
   part {
     filename     = "cloud-config.cfg"
     content_type = "text/cloud-config"
-    content      = "${coalesce(var.cloud_config, join("",
-                      data.template_file.mod.*.rendered))}"
+    content      = "${element(coalescelist(var.cloud_config,
+                      data.template_file.mod.*.rendered),
+                      count.index)}"
+  }
+
+  part {
+    filename     = "cloud_init_user_data.sh"
+    content_type = "text/x-shellscript"
+    content      = "${length(var.cloud_init_user_data) > 0 ?
+                      element(concat(var.cloud_init_user_data, list("")),
+                      count.index) : ""}"
   }
 }
 
@@ -40,10 +51,13 @@ resource "triton_machine" "mod" {
   package = "${var.package}"
   image   = "${var.image}"
 
-  cloud_config = "${coalesce(var.cloud_config, join("",
-                    data.template_cloudinit_config.mod.*.rendered))}"
+  cloud_config = "${element(coalescelist(var.cloud_config,
+                    data.template_file.mod.*.rendered),
+                    count.index)}"
 
-  user_script = "${var.user_script}"
+  user_script = "${length(var.user_script) > 0 ?
+                   element(concat(var.user_script, list("")),
+                   count.index) : ""}"
 
   firewall_enabled = "${var.firewall_enabled}"
 
@@ -72,7 +86,9 @@ resource "triton_firewall_rule" "mod" {
   count = "${var.firewall_enabled ? length(var.firewall_targets_list) : 0}"
 
   enabled     = true
-  description = "${format("Allow SSH to Bastion - %s", var.name)}"
+  description = "${format("Allow SSH to Bastion from %s - %s",
+                   var.firewall_targets_list[count.index],
+                   var.name)}"
 
   rule = "FROM ${var.firewall_targets_list[count.index]} TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 22"
 }

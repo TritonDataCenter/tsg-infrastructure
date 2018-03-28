@@ -11,11 +11,15 @@ variable "root_authorized_keys" {
 }
 
 variable "user_script" {
-  default = ""
+  default = []
 }
 
 variable "cloud_config" {
-  default = ""
+  default = []
+}
+
+variable "cloud_init_user_data" {
+  default = []
 }
 
 variable "firewall_enabled" {

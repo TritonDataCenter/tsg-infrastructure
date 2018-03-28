@@ -3,8 +3,13 @@ TRITON_KEY_ID ?= ""
 BASE_IMAGE_VERSION ?= "0.1.0"
 CONSUL_VERSION ?= "1.0.6"
 NOMAD_VERSION ?= "0.7.1"
+COCKROACH_VERSION ?= "1.1.6"
 SOURCE_IMAGE_VERSION ?= "0.1.0"
 SOURCE_IMAGE_NAME ?= "tsg-base"
+
+.SUFFIXES:
+
+default: help
 
 .PHONY: base
 base:
@@ -61,6 +66,16 @@ validate-nomad-client:
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		nomad.json
 
+.PHONY: validate-cockroach
+validate-cockroach: ## Validate the CockroachDB template.
+	packer validate \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "cockroach_version=$(COCKROACH_VERSION)" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		cockroach.json
+
 .PHONY: consul
 consul:
 	packer build \
@@ -95,7 +110,21 @@ nomad-client:
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		nomad.json
 
+.PHONY: cockroach
+cockroach: ## Build the CockroachDB template.
+	packer build \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "cockroach_version=$(COCKROACH_VERSION)" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		cockroach.json
+
 .PHONY: help
-help:
-	@echo "Valid targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+help: ## Show this help screen.
+	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
+	@echo ''
+	@echo 'Available targets are:'
+	@echo ''
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN { FS = ":.*?## " }; { printf "%-30s %s\n", $$1, $$2 }'
+	@echo ''

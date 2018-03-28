@@ -14,6 +14,32 @@ apt_get_update() {
     fi
 }
 
+detect_platform() {
+    case "$(uname -m)" in
+        x86|i?86)
+            echo 'i386'
+        ;;
+        x86_64|amd64)
+            echo 'amd64'
+        ;;
+    esac
+}
+
+detect_os() {
+    local os
+
+    os="$(uname | tr '[:upper:]' '[:lower:]')"
+
+    case "$os" in
+        linux|linux-gnu)
+            echo 'linux'
+        ;;
+        *)
+            echo "$os"
+        ;;
+    esac
+}
+
 detect_ubuntu_release() {
     lsb_release -sc
 }
