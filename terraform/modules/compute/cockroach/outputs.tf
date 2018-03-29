@@ -32,10 +32,6 @@ output "primaryip" {
   ]
 }
 
-output "public_cns_domain" {
-  value = "${local.public_cns_domain}"
-}
-
 output "private_cns_domain" {
   value = "${local.private_cns_domain}"
 }

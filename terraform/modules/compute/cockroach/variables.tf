@@ -1,4 +1,4 @@
-variable "name"    {}
+variable "name-prefix"    {}
 variable "image"   {}
 variable "package" {}
 
@@ -22,14 +22,6 @@ variable "user_script" {
   default = []
 }
 
-variable "cloud_config" {
-  default = []
-}
-
-variable "cloud_init_user_data" {
-  default = []
-}
-
 variable "firewall_enabled" {
   default = false
 }
@@ -48,4 +40,8 @@ variable "metadata" {
 
 variable "tags" {
   default = {}
+}
+
+variable "cloud_init_config" {
+  default = []
 }
