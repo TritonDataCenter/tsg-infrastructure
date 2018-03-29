@@ -10,11 +10,15 @@ Environment="STORE=/var/lib/cockroach,size=90%"
 Environment="ADDITIONAL_ARGS=--cache 25% --max-sql-memory 25%"
 EnvironmentFile=-/etc/default/cockroach
 PermissionsStartOnly=true
+WorkingDirectory=/
 ExecStartPre=-/bin/mkdir -p /var/run/cockroach
 ExecStartPre=-/bin/chown cockroach:cockroach /var/run/cockroach
 ExecStartPre=-/bin/chmod 700 /var/run/cockroach
 ExecStartPre=/bin/bash -c \
-	". /etc/default/cockroach; if [[ -n $$INSECURE ]]; then echo INSECURE='--insecure' > /var/run/cockroach/.environment; fi"
+	". /etc/default/cockroach; \
+		if [[ -n $$INSECURE ]]; then \
+			echo INSECURE='--insecure' > /var/run/cockroach/.environment; \
+		fi"
 EnvironmentFile=-/var/run/cockroach/.environment
 ExecStart=/usr/local/bin/cockroach start \
 	--no-color \
@@ -33,8 +37,13 @@ ExecStop=/usr/local/bin/cockroach quit \
 	$INSECURE
 ExecStopPost=-/bin/rm -f \
 	/var/run/cockroach/.environment
+ExecReload=/bin/kill -HUP $MAINPID
 User=cockroach
 Group=cockroach
+ProtectHome=yes
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
 LimitNOFILE=1048576
 LimitNPROC=infinity
 LimitCORE=infinity
@@ -42,6 +51,7 @@ TasksMax=infinity
 TimeoutStartSec=0
 KillMode=process
 Restart=on-failure
+RestartSec=1
 StartLimitBurst=3
 StartLimitInterval=60s
 

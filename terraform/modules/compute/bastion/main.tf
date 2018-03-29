@@ -1,6 +1,6 @@
 locals {
   public_cns_domain = "${format("%s.svc.%s.%s.triton.zone", var.cns_service_tag,
-                         data.triton_account.mod.id, data.triton_datacenter.mod.name)}",
+                         data.triton_account.mod.id, data.triton_datacenter.mod.name)}"
 
   private_cns_domain = "${format("%s.svc.%s.%s.cns.joyent.com", var.cns_service_tag,
                           data.triton_account.mod.id, data.triton_datacenter.mod.name)}"
@@ -10,14 +10,24 @@ data "triton_account" "mod" {}
 
 data "triton_datacenter" "mod" {}
 
-resource "triton_machine" "mod" {
-  count = "${var.instances_count}"
+resource "null_resource" "depends_on" {
+  triggers {
+    depends_on = "${join("", flatten(var.depends_on))}"
+  }
+}
 
-  name    = "${format("%s-bastion-%02d", var.name-prefix, count.index + 1)}"
+resource "triton_machine" "mod" {
+  count = "${var.instance_count}"
+
+  name    = "${format("%s-bastion-%02d", var.instance_name_prefix, count.index + 1)}"
   package = "${var.package}"
   image   = "${var.image}"
 
-  cloud_config = "${element(var.cloud_init_config,count.index)}"
+  root_authorized_keys = "${var.root_authorized_keys}"
+
+  cloud_config = "${length(var.cloud_init_config) > 0 ?
+                    element(concat(var.cloud_init_config, list("")),
+                    count.index) : ""}"
 
   user_script = "${length(var.user_script) > 0 ?
                    element(concat(var.user_script, list("")),
@@ -26,33 +36,51 @@ resource "triton_machine" "mod" {
   firewall_enabled = "${var.firewall_enabled}"
 
   networks = [
-    "${var.networks}"
+    "${var.networks}",
   ]
 
   affinity = [
-    "${format("instance!=~/^%s-bastion-\\d+/", var.name-prefix)}"
+    "${format("instance!=~%s-bastion-*", var.instance_name_prefix)}",
   ]
 
   cns {
     services = [
-      "${var.cns_service_tag}"
+      "${var.cns_service_tag}",
     ]
   }
 
   metadata = "${var.metadata}"
 
   tags = "${merge(map(
-      "name", "${format("%s-bastion-%02d", var.name-prefix, count.index + 1)}"
-    ), var.tags)}"
+    "name", "${format("%s-bastion-%02d", var.instance_name_prefix, count.index + 1)}"
+  ), var.tags)}"
+
+  depends_on = [
+    "null_resource.depends_on",
+  ]
+
+  lifecycle {
+    ignore_changes = [
+      "image",
+      "tags",
+    ]
+  }
 }
 
 resource "triton_firewall_rule" "mod" {
   count = "${var.firewall_enabled ? length(var.firewall_targets_list) : 0}"
 
-  enabled     = true
+  enabled = true
+
   description = "${format("Allow SSH to Bastion from %s - %s",
                    var.firewall_targets_list[count.index],
-                   var.name-prefix)}"
+                   var.instance_name_prefix)}"
 
-  rule = "FROM ${var.firewall_targets_list[count.index]} TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 22"
+  rule = <<EOS
+FROM ${var.firewall_targets_list[count.index]} TO tag "triton.cns.services" = "${var.cns_service_tag}" ALLOW tcp PORT 22
+EOS
+
+  depends_on = [
+    "triton_machine.mod",
+  ]
 }

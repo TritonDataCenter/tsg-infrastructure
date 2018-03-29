@@ -1,0 +1,37 @@
+[Unit]
+Description=Consul - A tool for service discovery and configuration.
+After=network.target
+
+[Service]
+Environment="LOG_DIRECTORY=/var/log/consul"
+EnvironmentFile=-/etc/default/consul
+PermissionsStartOnly=true
+WorkingDirectory=/
+ExecStart=/bin/bash -c \
+	"exec /usr/local/bin/consul agent \
+		-bind '{{ GetPrivateIP }}' \
+		-config-file /etc/consul/consul.json \
+		-config-dir /etc/consul/conf.d \
+		$ADDITIONAL_ARGS \
+		&>>${LOG_DIRECTORY}/consul.log"
+ExecReload=/bin/kill -9 $MAINPID
+User=consul
+Group=consul
+ProtectHome=yes
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
+LimitNOFILE=65536
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+TimeoutStartSec=0
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=1
+StartLimitBurst=3
+StartLimitInterval=60s
+
+[Install]
+WantedBy=multi-user.target

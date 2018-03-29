@@ -1,5 +1,10 @@
-variable "name_prefix" {}
-variable "instance_type" {}
+variable "instance_name_prefix" {
+  type = "string"
+}
+
+variable "instance_type" {
+  type = "string"
+}
 
 variable "instance_count" {
   default = 1

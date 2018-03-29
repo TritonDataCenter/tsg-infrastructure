@@ -1,0 +1,8 @@
+# Defaults file for Fabio.
+#
+# The directory where the log files going to be stored (default: /var/log/fabio).
+# LOG_DIRECTORY=""
+#
+# Additional options, see fabio --help
+# Default: -ui.access ro
+# ADDITIONAL_ARGS=""

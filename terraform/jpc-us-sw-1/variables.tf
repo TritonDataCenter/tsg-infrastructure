@@ -27,7 +27,7 @@ variable "tsg_nomad_server_image_version" {
 }
 
 variable "tsg_nomad_client_image_name" {
-  default = "tsg-nomad-server"
+  default = "tsg-nomad-client"
 }
 
 variable "tsg_nomad_client_image_version" {
@@ -42,8 +42,16 @@ variable "tsg_cockroach_image_version" {
   default = "1.1.7"
 }
 
+variable "tsg_fabio_image_name" {
+  default = "tsg-fabio"
+}
+
+variable "tsg_fabio_image_version" {
+  default = "1.5.8"
+}
+
 variable "package" {
-  default= "k4-general-kvm-3.75G"
+  default = "k4-general-kvm-3.75G"
 }
 
 variable "firewall_enabled" {
@@ -51,11 +59,9 @@ variable "firewall_enabled" {
 }
 
 variable "allowed_ips" {
-  type = "list"
   default = []
 }
 
 variable "allowed_cidr_blocks" {
-  type = "list"
   default = []
 }

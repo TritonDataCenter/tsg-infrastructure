@@ -1,0 +1,38 @@
+[Unit]
+Description=Fabio - A HTTP and TCP reverse proxy.
+After=network.target
+
+[Service]
+Environment="LOG_DIRECTORY=/var/log/fabio"
+Environment="ADDITIONAL_ARGS=-ui.access ro"
+EnvironmentFile=-/etc/default/fabio
+PermissionsStartOnly=true
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+WorkingDirectory=/
+ExecStart=/bin/bash -c \
+		"exec /usr/local/bin/fabio \
+			-cfg /etc/fabio/fabio.properties \
+			$ADDITIONAL_ARGS \
+			1>>${LOG_DIRECTORY}/fabio.access.log \
+			2>>${LOG_DIRECTORY}/fabio.log"
+ExecReload=/bin/true
+User=fabio
+Group=fabio
+ProtectHome=yes
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
+LimitNOFILE=1048576
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+TimeoutStartSec=0
+KillMode=process
+KillSignal=SIGTERM
+Restart=on-failure
+RestartSec=1
+StartLimitBurst=3
+StartLimitInterval=60s
+
+[Install]
+WantedBy=multi-user.target
