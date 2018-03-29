@@ -1,4 +1,4 @@
-variable "name"    {}
+variable "name-prefix" {}
 variable "image"   {}
 variable "package" {}
 
@@ -11,14 +11,6 @@ variable "root_authorized_keys" {
 }
 
 variable "user_script" {
-  default = []
-}
-
-variable "cloud_config" {
-  default = []
-}
-
-variable "cloud_init_user_data" {
   default = []
 }
 
@@ -44,4 +36,8 @@ variable "metadata" {
 
 variable "tags" {
   default = {}
+}
+
+variable "cloud_init_config" {
+  default = []
 }
