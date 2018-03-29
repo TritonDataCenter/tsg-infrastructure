@@ -3,11 +3,11 @@ locals {
                           data.triton_account.mod.id, data.triton_datacenter.mod.name)}"
 }
 
-resource "triton_machine" "mod" {
+resource "triton_machine" "nomad_server" {
   count            = "${var.instance_count}"
-  name             = "${format("%s-consul-%02d", var.instance_name_prefix, count.index + 1)}"
+  name             = "${format("%s-nomad-server-%02d", var.instance_name_prefix, count.index + 1)}"
   package          = "${var.package}"
-  image            = "${var.consul_image_id}"
+  image            = "${var.nomad_server_image_id}"
 
   cloud_config = "${element(var.cloud_init_config,count.index)}"
 
@@ -16,12 +16,12 @@ resource "triton_machine" "mod" {
   }
 
   tags {
-    name = "${format("%s-consul-%02d", var.instance_name_prefix, count.index + 1)}"
+    name = "${format("%s-nomad-server-%02d", var.instance_name_prefix, count.index + 1)}"
   }
 
   firewall_enabled = "${var.firewall_enabled}"
 
-  affinity    = ["instance!=consul*"]
+  affinity    = ["instance!=nomad-server*"]
   user_script = "${element(
                    data.template_file.user_data.*.rendered,
                    count.index)}"
@@ -36,7 +36,7 @@ data "template_file" "user_data" {
 
   vars {
     dc = "${data.triton_datacenter.mod.name}"
-    cns_url = "${local.private_cns_domain}"
+    cns_url = "${var.consul_cns_url}"
   }
 }
 

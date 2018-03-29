@@ -1,7 +1,5 @@
 #!/bin/bash
 
-hostnamectl --static set-hostname "${hostname}"
-
 sed -i -e "s/TRITON_DC/${dc}/g" /etc/nomad/config.hcl
 sed -i -e "s/TRITON_URL/${dc}/g" /etc/consul.d/client/client.json
 

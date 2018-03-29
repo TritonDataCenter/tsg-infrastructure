@@ -1,6 +1,8 @@
 variable "instance_count" {}
 variable "instance_name_prefix" {}
-variable "consul_image_id" {}
+variable "nomad_server_image_id" {}
+variable "consul_cns_url" {}
+
 variable "package" {
   default = "k4-general-kvm-3.75G"
 }
@@ -14,7 +16,7 @@ variable "networks" {
 }
 
 variable "cns_service_tag" {
-  default = "consul"
+  default = "nomadserver"
 }
 
 variable "cloud_init_config" {
