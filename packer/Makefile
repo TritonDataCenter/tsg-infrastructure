@@ -11,21 +11,13 @@ SOURCE_IMAGE_NAME ?= "tsg-base"
 
 default: help
 
-.PHONY: base
-base:
-	packer build \
-		-var "triton_account=$(TRITON_ACCOUNT)" \
-		-var "triton_key_id=$(TRITON_KEY_ID)" \
-		-var "version=$(BASE_IMAGE_VERSION)" \
-		tsg-base.json
-
 .PHONY: inspect-base
-inspect-base:
+inspect-base: ## Inspects the contents of the TSG Base template.
 	packer inspect \
 		tsg-base.json
 
 .PHONY: validate-base
-validate-base:
+validate-base: ## Validate the TSG Base template.
 	packer validate \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
@@ -33,7 +25,7 @@ validate-base:
 		tsg-base.json
 
 .PHONY: validate-consul
-validate-consul:
+validate-consul: ## Validate the TSG Consul template.
 	packer validate \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
@@ -43,7 +35,7 @@ validate-consul:
 		consul.json
 
 .PHONY: validate-nomad-server
-validate-nomad-server:
+validate-nomad-server: ## Validate the TSG Nomad Server template.
 	packer validate \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
@@ -55,7 +47,7 @@ validate-nomad-server:
 		nomad.json
 
 .PHONY: validate-nomad-client
-validate-nomad-client:
+validate-nomad-client: ## Validate the TSG Nomad Client template.
 	packer validate \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
@@ -67,7 +59,7 @@ validate-nomad-client:
 		nomad.json
 
 .PHONY: validate-cockroach
-validate-cockroach: ## Validate the CockroachDB template.
+validate-cockroach: ## Validate the TSG CockroachDB template.
 	packer validate \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
@@ -76,8 +68,16 @@ validate-cockroach: ## Validate the CockroachDB template.
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		cockroach.json
 
+.PHONY: base
+base: ## Build the TSG Base template.
+	packer build \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "version=$(BASE_IMAGE_VERSION)" \
+		tsg-base.json
+
 .PHONY: consul
-consul:
+consul: ## Build the TSG Consul template.
 	packer build \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
@@ -87,7 +87,7 @@ consul:
 		consul.json
 
 .PHONY: nomad-server
-nomad-server:
+nomad-server: ## Build the TSG Nomad Server template.
 	packer build \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
@@ -99,7 +99,7 @@ nomad-server:
 		nomad.json
 
 .PHONY: nomad-client
-nomad-client:
+nomad-client: ## Build the TSG Nomad Client template.
 	packer build \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
@@ -111,7 +111,7 @@ nomad-client:
 		nomad.json
 
 .PHONY: cockroach
-cockroach: ## Build the CockroachDB template.
+cockroach: ## Build the TSG CockroachDB template.
 	packer build \
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \

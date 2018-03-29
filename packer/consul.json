@@ -1,7 +1,8 @@
 {
+  "_comment": "Based on Ubuntu 16.04 x86_64 (amd64)",
   "variables": {
-    "name": "consul-server",
-    "description": "",
+    "name": "tsg-consul-server",
+    "description": "Triton Service Groups - Consul",
     "consul_version": "",
     "triton_account": "{{env `TRITON_ACCOUNT`}}",
     "triton_key_id": "{{env `TRITON_KEY_ID`}}",
