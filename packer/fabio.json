@@ -1,0 +1,82 @@
+{
+  "_comment": "Based on Ubuntu 16.04 x86_64 (amd64)",
+  "variables": {
+    "name": "tsg-fabio",
+    "description": "Triton Service Groups - Fabio",
+    "version": "",
+    "consul_version": "",
+    "fabio_version": "",
+    "build_number": "{{env `BUILD_NUMBER`}}",
+    "triton_url": "{{env `TRITON_URL`}}",
+    "triton_account": "{{env `TRITON_ACCOUNT`}}",
+    "triton_key_id": "{{env `TRITON_KEY_ID`}}",
+    "source_machine_image": "",
+    "source_machine_image_version": "",
+    "source_machine_package": "k4-general-kvm-3.75G",
+    "debug": "{{env `PACKER_DEBUG`}}"
+  },
+  "description": "{{user `description`}}",
+  "builders": [
+    {
+      "type": "triton",
+      "triton_url": "{{user `triton_url`}}",
+      "triton_account": "{{user `triton_account`}}",
+      "triton_key_id": "{{user `triton_key_id`}}",
+      "source_machine_name": "packer-{{user `name`}}-{{timestamp}}",
+      "source_machine_package": "{{user `source_machine_package`}}",
+      "source_machine_image_filter": {
+        "name": "{{user `source_machine_image`}}",
+        "version": "{{user `source_machine_image_version`}}",
+        "most_recent": "true"
+      },
+      "ssh_username": "ubuntu",
+      "image_version": "{{user `fabio_version`}}",
+      "image_name": "{{user `name`}}",
+      "image_description": "{{user `description`}}",
+      "image_tags": {
+        "name": "{{user `name`}}",
+        "description": "{{user `description`}}",
+        "version": "{{user `fabio_version`}}",
+        "creation_date": "{{isotime \"Mon Jan _2 15:04:05 UTC 2006\"}}",
+        "role": "os",
+        "default_user": "ubuntu"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "scripts/helpers",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
+      "source": "files/consul",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
+      "source": "files/fabio",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "shell",
+      "environment_vars": [
+        "BUILD_NUMBER={{user `build_number`}}",
+        "PACKER_BUILD_NAME={{user `name`}}",
+        "PACKER_BUILD_TIMESTAMP={{timestamp}}",
+        "PACKER_BUILD_VERSION={{if eq (user `version`) ``}}{{user `fabio_version`}}{{else}}{{user `version`}}{{end}}",
+        "CONSUL_VERSION={{user `consul_version`}}",
+        "FABIO_VERSION={{user `fabio_version`}}"
+      ],
+      "execute_command": "{{ .Vars }} sudo -H -S -E -n bash {{if eq (user `debug`) `true` }}-x{{end}} '{{ .Path }}'",
+      "expect_disconnect": "true",
+      "scripts": [
+        "scripts/common/consul.sh",
+        "scripts/consul/client/consul.sh",
+        "scripts/common/fabio.sh",
+        "scripts/fabio/motd.sh"
+      ]
+    }
+  ]
+}

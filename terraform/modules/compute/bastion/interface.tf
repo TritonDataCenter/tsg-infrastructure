@@ -1,13 +1,25 @@
-variable "name-prefix" {}
-variable "image"   {}
-variable "package" {}
+variable "instance_name_prefix" {
+  type = "string"
+}
 
-variable "instances_count" {
+variable "image" {
+  type = "string"
+}
+
+variable "package" {
+  type = "string"
+}
+
+variable "instance_count" {
   default = 1
 }
 
 variable "root_authorized_keys" {
   default = ""
+}
+
+variable "cloud_init_config" {
+  default = []
 }
 
 variable "user_script" {
@@ -38,6 +50,6 @@ variable "tags" {
   default = {}
 }
 
-variable "cloud_init_config" {
+variable "depends_on" {
   default = []
 }

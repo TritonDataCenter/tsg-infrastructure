@@ -1,0 +1,17 @@
+{
+  "server": false,
+  "datacenter": "DATACENTER_NAME",
+  "data_dir": "/mnt/consul",
+  "encrypt": "Bm4qFPeEKR+0XvWKA5/d7Q==",
+  "log_level": "INFO",
+  "enable_syslog": false,
+  "start_join": [
+    "CONSUL_CNS_URL"
+  ],
+  "rejoin_after_leave": true,
+  "disable_anonymous_signature": true,
+  "disable_update_check": true,
+  "ports": {
+    "dns": -1
+  }
+}

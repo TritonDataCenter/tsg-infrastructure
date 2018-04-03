@@ -29,7 +29,7 @@ fetch_origin() {
         if which curl &>/dev/null; then
             origin=$(curl --max-time 5 --user-agent 'curl/1.0.0' -L "$host" 2>/dev/null)
         else
-            origin=$(wget --timeout 5 --user-agent 'curl/1.0.0' -O- "$host" 2>/dev/null)
+            origin=$(wget --timeout 5 --user-agent 'Wget/1.0.0' -O- "$host" 2>/dev/null)
         fi
         set -e
 

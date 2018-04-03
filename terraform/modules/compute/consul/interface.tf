@@ -1,8 +1,29 @@
-variable "instance_count" {}
-variable "instance_name_prefix" {}
-variable "consul_image_id" {}
+variable "instance_name_prefix" {
+  type = "string"
+}
+
+variable "image" {
+  type = "string"
+}
+
 variable "package" {
-  default = "k4-general-kvm-3.75G"
+  type = "string"
+}
+
+variable "instance_count" {
+  default = 3
+}
+
+variable "root_authorized_keys" {
+  default = ""
+}
+
+variable "cloud_init_config" {
+  default = []
+}
+
+variable "user_script" {
+  default = []
 }
 
 variable "firewall_enabled" {
@@ -17,6 +38,14 @@ variable "cns_service_tag" {
   default = "consul"
 }
 
-variable "cloud_init_config" {
+variable "metadata" {
+  default = {}
+}
+
+variable "tags" {
+  default = {}
+}
+
+variable "depends_on" {
   default = []
 }

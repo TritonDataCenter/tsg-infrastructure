@@ -4,7 +4,9 @@
     "name": "tsg-cockroach",
     "description": "Triton Service Groups - CockroachDB",
     "version": "",
+    "consul_version": "",
     "cockroach_version": "",
+    "build_number": "{{env `BUILD_NUMBER`}}",
     "triton_url": "{{env `TRITON_URL`}}",
     "triton_account": "{{env `TRITON_ACCOUNT`}}",
     "triton_key_id": "{{env `TRITON_KEY_ID`}}",
@@ -49,6 +51,11 @@
     },
     {
       "type": "file",
+      "source": "files/consul",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
       "source": "files/cockroach",
       "destination": "/var/tmp"
     },
@@ -59,11 +66,14 @@
         "PACKER_BUILD_NAME={{user `name`}}",
         "PACKER_BUILD_TIMESTAMP={{timestamp}}",
         "PACKER_BUILD_VERSION={{if eq (user `version`) ``}}{{user `cockroach_version`}}{{else}}{{user `version`}}{{end}}",
+        "CONSUL_VERSION={{user `consul_version`}}",
         "COCKROACH_VERSION={{user `cockroach_version`}}"
       ],
       "execute_command": "{{ .Vars }} sudo -H -S -E -n bash {{if eq (user `debug`) `true` }}-x{{end}} '{{ .Path }}'",
       "expect_disconnect": "true",
       "scripts": [
+        "scripts/common/consul.sh",
+        "scripts/consul/client/consul.sh",
         "scripts/common/cockroach.sh",
         "scripts/cockroach/motd.sh"
       ]

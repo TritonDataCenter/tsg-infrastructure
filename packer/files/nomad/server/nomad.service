@@ -1,15 +1,36 @@
 [Unit]
-Description=Nomad Server
+Description=Nomad - A flexible, enterprise-grade cluster scheduler.
 After=network.target
 
 [Service]
+Environment="LOG_DIRECTORY=/var/log/nomad"
+EnvironmentFile=-/etc/default/nomad
+PermissionsStartOnly=true
+WorkingDirectory=/
+ExecStart=/bin/bash -c \
+	"exec /usr/local/bin/nomad agent \
+		-config /etc/nomad/config.hcl \
+		-config /etc/nomad/conf.d \
+		$ADDITIONAL_ARGS \
+		&>>${LOG_DIRECTORY}/nomad.log"
+ExecReload=/bin/kill -9 $MAINPID
 User=nomad
 Group=nomad
-ExecStart=/usr/local/bin/nomad agent -config /etc/nomad
-ExecReload=/bin/kill -9 $MAINPID
+ProtectHome=yes
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
+LimitNOFILE=65536
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+TimeoutStartSec=0
+KillMode=process
 KillSignal=SIGINT
 Restart=on-failure
 RestartSec=1
+StartLimitBurst=3
+StartLimitInterval=60s
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target

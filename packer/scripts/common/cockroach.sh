@@ -12,15 +12,7 @@ readonly COCKROACH_FILES='/var/tmp/cockroach'
 
 apt_get_update
 
-# Dependencies needed by CockroachDB, etc.
-PACKAGES=(
-    'ntpdate'
-    'xfsprogs'
-)
-
-for package in "${PACKAGES[@]}"; do
-    apt-get --assume-yes install "$package"
-done
+apt-get --assume-yes install ntpdate
 
 # The version 1.1.7 is currently the recommended stable version.
 if [[ -z $COCKROACH_VERSION ]]; then

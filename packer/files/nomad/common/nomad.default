@@ -1,0 +1,7 @@
+# Defaults file for Nomad.
+#
+# The directory where the log files going to be stored (default: /var/log/nomad).
+# LOG_DIRECTORY=""
+#
+# Additional options, see nomad agent --help
+# ADDITIONAL_ARGS=""

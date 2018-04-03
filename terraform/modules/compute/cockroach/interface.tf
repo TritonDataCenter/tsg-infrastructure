@@ -1,21 +1,37 @@
-variable "name-prefix"    {}
-variable "image"   {}
-variable "package" {}
+variable "instance_name_prefix" {
+  type = "string"
+}
+
+variable "image" {
+  type = "string"
+}
+
+variable "package" {
+  type = "string"
+}
+
+variable "instance_count" {
+  default = 3
+}
 
 variable "insecure" {
   default = false
 }
 
-variable "instances_count" {
-  default = 3
+variable "consul_cns_url" {
+  type = "string"
 }
 
 variable "root_authorized_keys" {
   default = ""
 }
 
-variable "bastion_host" {
+variable "bastion_cns_url" {
   default = ""
+}
+
+variable "cloud_init_config" {
+  default = []
 }
 
 variable "user_script" {
@@ -42,6 +58,6 @@ variable "tags" {
   default = {}
 }
 
-variable "cloud_init_config" {
+variable "depends_on" {
   default = []
 }

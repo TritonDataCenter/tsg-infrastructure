@@ -1,20 +1,29 @@
 {
+  "_comment": "Based on Ubuntu 16.04 x86_64 (amd64)",
   "variables": {
     "name": "{{user `name`}}",
-    "description": "",
+    "description": "Triton Service Groups - Nomad",
+    "version": "",
+    "consul_version": "",
     "nomad_version": "",
     "nomad_deployment_type": "",
+    "build_number": "{{env `BUILD_NUMBER`}}",
+    "triton_url": "{{env `TRITON_URL`}}",
     "triton_account": "{{env `TRITON_ACCOUNT`}}",
     "triton_key_id": "{{env `TRITON_KEY_ID`}}",
     "source_machine_image": "",
     "source_machine_image_version": "",
-    "source_machine_package": "k4-general-kvm-3.75G"
+    "source_machine_package": "k4-general-kvm-3.75G",
+    "debug": "{{env `PACKER_DEBUG`}}"
   },
+  "description": "{{user `description`}}",
   "builders": [
     {
       "type": "triton",
+      "triton_url": "{{user `triton_url`}}",
       "triton_account": "{{user `triton_account`}}",
       "triton_key_id": "{{user `triton_key_id`}}",
+      "source_machine_name": "packer-{{user `name`}}-{{timestamp}}",
       "source_machine_package": "{{user `source_machine_package`}}",
       "source_machine_image_filter": {
         "name": "{{user `source_machine_image`}}",
@@ -38,26 +47,37 @@
   "provisioners": [
     {
       "type": "file",
-      "source": "files/consul-client/",
-      "destination": "/tmp"
+      "source": "scripts/helpers",
+      "destination": "/var/tmp"
     },
     {
       "type": "file",
-      "source": "files/nomad/{{user `nomad_deployment_type`}}/",
-      "destination": "/tmp"
+      "source": "files/consul",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
+      "source": "files/nomad",
+      "destination": "/var/tmp"
     },
     {
       "type": "shell",
-      "execute_command": "{{ .Vars }} sudo -H -S -E -n bash '{{ .Path }}'",
+      "environment_vars": [
+        "BUILD_NUMBER={{user `build_number`}}",
+        "PACKER_BUILD_NAME={{user `name`}}",
+        "PACKER_BUILD_TIMESTAMP={{timestamp}}",
+        "PACKER_BUILD_VERSION={{if eq (user `version`) ``}}{{user `nomad_version`}}{{else}}{{user `version`}}{{end}}",
+        "CONSUL_VERSION={{user `consul_version`}}",
+        "NOMAD_VERSION={{user `nomad_version`}}"
+      ],
+      "execute_command": "{{ .Vars }} sudo -H -S -E -n bash {{if eq (user `debug`) `true` }}-x{{end}} '{{ .Path }}'",
+      "expect_disconnect": "true",
       "scripts": [
-        "scripts/nomad/packages.sh"
-      ]
-    },
-    {
-      "type": "shell",
-      "execute_command": "{{ .Vars }} sudo -H -S -E -n bash '{{ .Path }}'",
-      "scripts": [
-        "scripts/consul-client/packages.sh"
+        "scripts/common/consul.sh",
+        "scripts/consul/client/consul.sh",
+        "scripts/common/nomad.sh",
+        "scripts/nomad/{{user `nomad_deployment_type`}}/nomad.sh",
+        "scripts/nomad/common/motd.sh"
       ]
     }
   ]

@@ -1,0 +1,18 @@
+{
+  "server": true,
+  "bootstrap_expect": 3,
+  "datacenter": "DATACENTER_NAME",
+  "data_dir": "/mnt/consul",
+  "encrypt": "Bm4qFPeEKR+0XvWKA5/d7Q==",
+  "log_level": "INFO",
+  "enable_syslog": false,
+  "leave_on_terminate": true,
+  "skip_leave_on_interrupt": true,
+  "rejoin_after_leave": true,
+  "retry_join": [
+    "CONSUL_CNS_URL"
+  ],
+  "ports": {
+    "dns": -1
+  }
+}
