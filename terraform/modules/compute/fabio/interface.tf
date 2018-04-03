@@ -53,3 +53,7 @@ variable "tags" {
 variable "depends_on" {
   default = []
 }
+
+variable "private_cns_fragment" {}
+variable "public_cns_fragment" {}
+

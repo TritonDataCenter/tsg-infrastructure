@@ -57,3 +57,5 @@ variable "tags" {
 variable "depends_on" {
   default = []
 }
+
+variable "cns_fragment" {}

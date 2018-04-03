@@ -1,9 +1,6 @@
 locals {
-  private_cns_domain = "${format("%s.svc.%s.%s.cns.joyent.com", var.cns_service_tag,
-                          data.triton_account.mod.id, data.triton_datacenter.mod.name)}"
+  private_cns_domain = "${format("%s.%s", var.cns_service_tag, var.cns_fragment)}"
 }
-
-data "triton_account" "mod" {}
 
 data "triton_datacenter" "mod" {}
 
