@@ -29,3 +29,7 @@ output "nomad_client_cns" {
 output "cockroach_db_cns" {
   value = "${module.cockroach.private_cns_domain}"
 }
+
+output "api_server_cns" {
+  value = "${module.api_server.private_cns_domain}"
+}

@@ -50,6 +50,14 @@ variable "tsg_fabio_image_version" {
   default = "1.5.8"
 }
 
+variable "tsg_api_server_image_name" {
+  default = "tsg-api-server"
+}
+
+variable "tsg_api_server_image_version" {
+  default = "0.1.0"
+}
+
 variable "package" {
   default = "k4-general-kvm-3.75G"
 }

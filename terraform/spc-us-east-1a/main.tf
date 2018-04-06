@@ -43,6 +43,12 @@ data "triton_image" "fabio" {
   most_recent = true
 }
 
+data "triton_image" "api_server" {
+  name        = "${var.tsg_api_server_image_name}"
+  version     = "${var.tsg_api_server_image_version}"
+  most_recent = true
+}
+
 module "cns_fragments" {
   source = "../modules/common/cns_structure"
 
@@ -227,6 +233,43 @@ module "nomad_client" {
 
   cloud_init_config = [
     "${module.nomad_client_hostname_cloud_config.rendered}",
+  ]
+
+  networks = [
+    "${module.networking.private_network_id}",
+  ]
+
+  depends_on = [
+    "${module.consul.ips}",
+    "${module.nomad_server.ips}",
+  ]
+}
+
+module "api_servers_hostname_cloud_config" {
+  source = "../modules/common/hostname"
+
+  instance_count = 3
+
+  instance_name_prefix = "${var.instance_name_prefix}"
+  instance_type        = "api-server"
+}
+
+module "api_server" {
+  source = "../modules/compute/api-server"
+
+  instance_count = 3
+
+  instance_name_prefix = "${var.instance_name_prefix}"
+  image                = "${data.triton_image.api_server.id}"
+  package              = "${var.package}"
+
+  private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
+  consul_cns_url       = "${module.consul.private_cns_domain}"
+  nomad_cns_url        = "${module.nomad_server.private_cns_domain}"
+  nomad_role           = "api-server"
+
+  cloud_init_config = [
+    "${module.api_servers_hostname_cloud_config.rendered}",
   ]
 
   networks = [

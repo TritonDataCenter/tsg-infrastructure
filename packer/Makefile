@@ -5,6 +5,7 @@ CONSUL_VERSION ?= "1.0.6"
 NOMAD_VERSION ?= "0.7.1"
 COCKROACH_VERSION ?= "1.1.7"
 FABIO_VERSION ?= "1.5.8"
+API_SERVER_VERSION ?= "0.1.0"
 SOURCE_IMAGE_VERSION ?= "0.1.0"
 SOURCE_IMAGE_NAME ?= "tsg-base"
 
@@ -75,6 +76,18 @@ validate-cockroach: ## Validate the CockroachDB template.
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		cockroach.json
 
+.PHONY: validate-api-server
+validate-api-server: ## Validate the API Server template.
+	packer validate \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "version=$(API_SERVER_VERSION)" \
+		-var "consul_version=$(CONSUL_VERSION)" \
+		-var "nomad_version=$(NOMAD_VERSION)" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		api-server.json
+
 .PHONY: validate-fabio
 validate-fabio: ## Validate the Fabio template.
 	packer validate \
@@ -132,6 +145,18 @@ cockroach: validate-cockroach ## Build the CockroachDB template.
 		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		cockroach.json
+
+.PHONY: api-server
+api-server: ## Build the API Server template.
+	packer build \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "version=$(API_SERVER_VERSION)" \
+		-var "consul_version=$(CONSUL_VERSION)" \
+		-var "nomad_version=$(NOMAD_VERSION)" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		api-server.json
 
 .PHONY: fabio
 fabio: validate-fabio ## Validate the Fabio template.
