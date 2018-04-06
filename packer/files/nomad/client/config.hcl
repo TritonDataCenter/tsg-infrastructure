@@ -18,9 +18,9 @@ client {
   ]
 
   options = {
-    "user.blacklist"         = "root,ubuntu"
-    "user.checked_drivers"   = "exec,raw_exec"
-    "driver.raw_exec.enable" = "1"
+    "user.blacklist"       = "root,ubuntu"
+    "user.checked_drivers" = "exec"
+    "driver.exec"          = 1
   }
 
   reserved {
