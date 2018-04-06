@@ -10,9 +10,10 @@ data "template_file" "mod" {
   template = "${file(format("%s/templates/%s", path.module, "user_script.sh.tpl"))}"
 
   vars {
-    data_center_name = "${data.triton_datacenter.mod.name}"
-    consul_cns_url   = "${var.consul_cns_url}"
-    nomad_cns_url    = "${var.nomad_cns_url}"
+    data_center_name  = "${data.triton_datacenter.mod.name}"
+    consul_cns_url    = "${var.consul_cns_url}"
+    nomad_cns_url     = "${var.nomad_cns_url}"
+    nomad_client_role = "${var.nomad_role}"
   }
 }
 

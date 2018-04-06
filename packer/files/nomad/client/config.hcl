@@ -23,6 +23,10 @@ client {
     "driver.exec"          = 1
   }
 
+  meta {
+    role = "NOMAD_CLIENT_ROLE"
+  }
+
   reserved {
     reserved_ports = "22,25,80,443,8080,8500-8600"
   }

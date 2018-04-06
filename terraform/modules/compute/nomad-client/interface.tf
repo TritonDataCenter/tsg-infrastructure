@@ -22,6 +22,10 @@ variable "nomad_cns_url" {
   type = "string"
 }
 
+variable "nomad_role" {
+  default = ""
+}
+
 variable "root_authorized_keys" {
   default = ""
 }
