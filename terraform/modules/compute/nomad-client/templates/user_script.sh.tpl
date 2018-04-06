@@ -21,6 +21,10 @@ sed -i -e \
     's/NOMAD_CNS_URL/${nomad_cns_url}/g' \
     /etc/nomad/config.hcl
 
+sed -i -e \
+    's/NOMAD_CLIENT_ROLE/${nomad_client_role}/g' \
+    /etc/nomad/config.hcl
+
 mkdir -p /mnt/consul \
          /mnt/nomad
 

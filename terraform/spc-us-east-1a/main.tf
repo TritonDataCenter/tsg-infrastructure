@@ -220,9 +220,10 @@ module "nomad_client" {
   package              = "${var.package}"
   image                = "${data.triton_image.nomad_client.id}"
 
-  cns_fragment = "${module.cns_fragments.private_dns_fragment}"
+  cns_fragment   = "${module.cns_fragments.private_dns_fragment}"
   consul_cns_url = "${module.consul.private_cns_domain}"
   nomad_cns_url  = "${module.nomad_server.private_cns_domain}"
+  nomad_role     = "automater"
 
   cloud_init_config = [
     "${module.nomad_client_hostname_cloud_config.rendered}",
