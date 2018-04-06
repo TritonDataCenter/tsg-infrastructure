@@ -27,7 +27,7 @@ mkdir -p /mnt/consul \
 chown consul: /mnt/consul
 chmod 750 /mnt/consul
 
-chown nomad: /mnt/nomad
+chown root: /mnt/nomad
 chmod 750 /mnt/nomad
 
 for service in consul nomad; do

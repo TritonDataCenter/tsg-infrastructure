@@ -8,6 +8,16 @@ source /var/tmp/helpers/default.sh
 
 readonly NOMAD_FILES='/var/tmp/nomad/client'
 
+if getent passwd nomad &>/dev/null; then
+    deluser \
+        --quiet \
+        --system \
+        nomad
+fi
+
+chown root:adm /var/log/nomad
+chmod 2750 /var/log/nomad
+
 cp -f "${NOMAD_FILES}/config.hcl" \
       /etc/nomad/config.hcl
 

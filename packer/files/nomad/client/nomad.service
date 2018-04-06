@@ -14,8 +14,6 @@ ExecStart=/bin/bash -c \
 		$ADDITIONAL_ARGS \
 		&>>${LOG_DIRECTORY}/nomad.log"
 ExecReload=/bin/kill -9 $MAINPID
-User=nomad
-Group=nomad
 ProtectHome=yes
 ProtectSystem=full
 PrivateTmp=yes
