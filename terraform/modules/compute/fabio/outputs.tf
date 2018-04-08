@@ -43,3 +43,21 @@ output "public_cns_domain" {
 output "private_cns_domain" {
   value = "${local.private_cns_domain}"
 }
+
+output "cloudflare_domain" {
+  value = "${var.cloudflare_domain}"
+}
+
+output "cloudflare_record_ids" {
+  value = [
+    "${cloudflare_record.mod.*.id}",
+  ]
+}
+
+output "cloudflare_record_name" {
+  value = "${element(cloudflare_record.mod.*.hostname, 0)}"
+}
+
+output "cloudflare_zone_id" {
+  value = "${element(cloudflare_record.mod.*.zone_id, 0)}"
+}

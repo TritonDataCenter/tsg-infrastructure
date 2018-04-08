@@ -3,7 +3,7 @@ provider "triton" {}
 terraform {
   backend "manta" {
     path = "us-east-1a/tsg"
-    url = "https://us-east.manta.samsungcloud.io"
+    url  = "https://us-east.manta.samsungcloud.io"
   }
 }
 
@@ -52,7 +52,13 @@ data "triton_image" "api_server" {
 module "cns_fragments" {
   source = "../modules/common/cns_structure"
 
-  cloud = "spc"
+  cloud = "${var.cloud}"
+}
+
+module "dns_helper" {
+  source = "../modules/common/dns_helper"
+
+  cloud = "${var.cloud}"
 }
 
 module "networking" {
@@ -89,7 +95,7 @@ module "bastion" {
   firewall_enabled = "${var.firewall_enabled}"
 
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
-  public_cns_fragment = "${module.cns_fragments.public_dns_fragment}"
+  public_cns_fragment  = "${module.cns_fragments.public_dns_fragment}"
 
   cloud_init_config = [
     "${module.bastion_hostname_cloud_config.rendered}",
@@ -157,8 +163,8 @@ module "cockroach" {
 
   insecure = true
 
-  cns_fragment = "${module.cns_fragments.private_dns_fragment}"
-  consul_cns_url       = "${module.consul.private_cns_domain}"
+  cns_fragment    = "${module.cns_fragments.private_dns_fragment}"
+  consul_cns_url  = "${module.consul.private_cns_domain}"
   bastion_cns_url = "${module.bastion.public_cns_domain}"
 
   cloud_init_config = [
@@ -192,7 +198,7 @@ module "nomad_server" {
   package              = "${var.package}"
   image                = "${data.triton_image.nomad_server.id}"
 
-  cns_fragment = "${module.cns_fragments.private_dns_fragment}"
+  cns_fragment   = "${module.cns_fragments.private_dns_fragment}"
   consul_cns_url = "${module.consul.private_cns_domain}"
 
   cloud_init_config = [
@@ -294,15 +300,24 @@ module "fabio_hostname_cloud_config" {
 module "fabio" {
   source = "../modules/compute/fabio"
 
+  cloud = "${var.cloud}"
+
   instance_count = 2
 
   instance_name_prefix = "${var.instance_name_prefix}"
   image                = "${data.triton_image.fabio.id}"
   package              = "${var.package}"
 
+  public_cns_fragment  = "${module.cns_fragments.public_dns_fragment}"
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
-  public_cns_fragment = "${module.cns_fragments.public_dns_fragment}"
-  consul_cns_url       = "${module.consul.private_cns_domain}"
+
+  cloudflare_domain = "${module.dns_helper.domain_name}"
+  cloudflare_name   = "${module.dns_helper.fqdn}"
+
+  consul_cns_url  = "${module.consul.private_cns_domain}"
+  bastion_cns_url = "${module.bastion.public_cns_domain}"
+
+  firewall_enabled = true
 
   cloud_init_config = [
     "${module.fabio_hostname_cloud_config.rendered}",
@@ -311,6 +326,10 @@ module "fabio" {
   networks = [
     "${module.networking.public_network_id}",
     "${module.networking.private_network_id}",
+  ]
+
+  firewall_targets_list = [
+    "${format("tag \"triton.cns.services\" = \"%s\"", module.bastion.cns_service_tag)}",
   ]
 
   depends_on = [

@@ -99,9 +99,9 @@ resource "null_resource" "mod" {
 
   provisioner "file" {
     content = <<EOF
-NODES='${join(",", sort(flatten(triton_machine.mod.*.ips)))}'
-INSECURE='${var.insecure ? "true" : "false"}'
-LEADER='${element(random_shuffle.mod.result, 0)}'
+export NODES='${join(",", sort(flatten(triton_machine.mod.*.ips)))}'
+export INSECURE='${var.insecure ? "true" : "false"}'
+export LEADER='${element(random_shuffle.mod.result, 0)}'
 EOF
 
     destination = "/var/tmp/.cockroach-cluster"

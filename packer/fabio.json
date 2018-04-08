@@ -75,7 +75,10 @@
         "scripts/common/consul.sh",
         "scripts/consul/client/consul.sh",
         "scripts/common/fabio.sh",
-        "scripts/fabio/motd.sh"
+        "scripts/common/nodejs.sh",
+        "scripts/fabio/manta.sh",
+        "scripts/fabio/motd.sh",
+        "scripts/triton/clean-up.sh"
       ]
     }
   ]

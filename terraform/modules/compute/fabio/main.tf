@@ -1,3 +1,5 @@
+provider "cloudflare" {}
+
 locals {
   public_cns_domain = "${format("%s.%s", var.cns_service_tag,
                          var.public_cns_fragment)}"
@@ -74,4 +76,125 @@ resource "triton_machine" "mod" {
       "tags",
     ]
   }
+}
+
+module "manta_url" {
+  source = "../../common/env"
+
+  environment = "MANTA_URL"
+}
+
+module "triton_account" {
+  source = "../../common/env"
+
+  environment = "TRITON_ACCOUNT"
+}
+
+module "triton_key_id" {
+  source = "../../common/env"
+
+  environment = "TRITON_KEY_ID"
+}
+
+module "manta_helper" {
+  source = "../../common/manta_helper"
+
+  cloud = "${var.cloud}"
+}
+
+resource "null_resource" "mod" {
+  count = "${var.instance_count}"
+
+  triggers {
+    fabio_instance_ids = "${join(",", triton_machine.mod.*.id)}"
+  }
+
+  connection {
+    type         = "ssh"
+    user         = "ubuntu"
+    host         = "${element(triton_machine.mod.*.primaryip, count.index)}"
+    bastion_host = "${var.bastion_cns_url}"
+    timeout      = "120s"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+export MANTA_URL='${coalesce(module.manta_url.environment["MANTA_URL"], module.manta_helper.manta_url)}'
+export MANTA_USER='${module.triton_account.environment["TRITON_ACCOUNT"]}'
+export MANTA_KEY_ID='${module.triton_key_id.environment["TRITON_KEY_ID"]}'
+EOF
+
+    destination = "/var/tmp/.manta"
+  }
+
+  provisioner "file" {
+    content = "${format("export MANTA_PATH='~~/stor/certificates/%s/%s'",
+                         var.cloud, data.triton_datacenter.mod.name)}"
+
+    destination = "/var/tmp/.certificate"
+  }
+
+  provisioner "remote-exec" {
+    scripts = [
+      "${format("%s/files/%s", path.module, "configure.sh")}",
+      "${format("%s/files/%s", path.module, "start.sh")}",
+    ]
+  }
+}
+
+resource "cloudflare_record" "mod" {
+  count = "${var.instance_count}"
+
+  domain = "${var.cloudflare_domain}"
+  name   = "${var.cloudflare_name}"
+
+  type  = "A"
+  value = "${element(triton_machine.mod.*.primaryip, count.index)}"
+  ttl   = "${var.cloudflare_ttl}"
+}
+
+resource "triton_firewall_rule" "firewall_allow_ssh" {
+  count = "${var.firewall_enabled ? length(var.firewall_targets_list) : 0}"
+
+  enabled = true
+
+  description = "${format("Allow SSH to Fabio from %s - %s",
+                   element(var.firewall_targets_list, count.index),
+                   var.instance_name_prefix)}"
+
+  rule = "FROM ${element(var.firewall_targets_list, count.index)} TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 22"
+
+  depends_on = [
+    "triton_machine.mod",
+  ]
+}
+
+resource "triton_firewall_rule" "firewall_allow_https" {
+  count = "${var.firewall_enabled ? 1 : 0}"
+
+  enabled = true
+
+  description = "${format("Allow HTTPS to Fabio - %s",
+                   var.instance_name_prefix)}"
+
+  rule = "FROM any TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 443"
+
+  depends_on = [
+    "triton_machine.mod",
+  ]
+}
+
+resource "triton_firewall_rule" "firewall_allow_9998" {
+  count = "${var.firewall_enabled ? 1 : 0}"
+
+  enabled = true
+
+  description = "${format("Allow TCP 9998 to Fabio - %s",
+                   var.instance_name_prefix)}"
+
+  rule = "FROM all vms TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 9998"
+
+  depends_on = [
+    "triton_machine.mod",
+  ]
 }

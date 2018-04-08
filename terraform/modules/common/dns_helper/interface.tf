@@ -1,0 +1,3 @@
+variable "cloud" {
+  default = "jpc"
+}
