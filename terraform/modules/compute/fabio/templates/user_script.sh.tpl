@@ -48,6 +48,17 @@ sed -i -e \
     "s/PRIVATE_IP/$${PRIVATE_IP}/g" \
     /etc/fabio/fabio.properties
 
+sed -i -e \
+    's/.*ListenAddress.*$//g' \
+    /etc/ssh/sshd_config
+
+cat <<EOS | tee -a /etc/ssh/sshd_config 1>/dev/null
+ListenAddress 127.0.0.1
+ListenAddress $PRIVATE_IP
+EOS
+
+systemctl ssh restart
+
 mkdir -p /mnt/consul
 
 chown consul: /mnt/consul
