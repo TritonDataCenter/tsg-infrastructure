@@ -1,4 +1,3 @@
-output "environment" {
-  value = "${map(var.environment,
-             data.external.mod.result.environment)}"
+output "value" {
+  value = "${data.external.mod.result.value}"
 }

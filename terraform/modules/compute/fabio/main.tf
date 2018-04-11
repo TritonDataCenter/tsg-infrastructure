@@ -81,19 +81,19 @@ resource "triton_machine" "mod" {
 module "manta_url" {
   source = "../../common/env"
 
-  environment = "MANTA_URL"
+  name = "MANTA_URL"
 }
 
 module "triton_account" {
   source = "../../common/env"
 
-  environment = "TRITON_ACCOUNT"
+  name = "TRITON_ACCOUNT"
 }
 
 module "triton_key_id" {
   source = "../../common/env"
 
-  environment = "TRITON_KEY_ID"
+  name = "TRITON_KEY_ID"
 }
 
 module "manta_helper" {
@@ -119,9 +119,9 @@ resource "null_resource" "mod" {
 
   provisioner "file" {
     content = <<EOF
-export MANTA_URL='${coalesce(module.manta_url.environment["MANTA_URL"], module.manta_helper.manta_url)}'
-export MANTA_USER='${module.triton_account.environment["TRITON_ACCOUNT"]}'
-export MANTA_KEY_ID='${module.triton_key_id.environment["TRITON_KEY_ID"]}'
+export MANTA_URL='${coalesce(module.manta_url.value, module.manta_helper.manta_url)}'
+export MANTA_USER='${module.triton_account.value}'
+export MANTA_KEY_ID='${module.triton_key_id.value}'
 EOF
 
     destination = "/var/tmp/.manta"
@@ -153,7 +153,7 @@ resource "cloudflare_record" "mod" {
   ttl   = "${var.cloudflare_ttl}"
 }
 
-resource "triton_firewall_rule" "firewall_allow_ssh" {
+resource "triton_firewall_rule" "firewall_allow_ingress_ssh" {
   count = "${var.firewall_enabled ? length(var.firewall_targets_list) : 0}"
 
   enabled = true
@@ -162,14 +162,15 @@ resource "triton_firewall_rule" "firewall_allow_ssh" {
                    element(var.firewall_targets_list, count.index),
                    var.instance_name_prefix)}"
 
-  rule = "FROM ${element(var.firewall_targets_list, count.index)} TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 22"
+  rule = "${format("FROM %s TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 22",
+            element(var.firewall_targets_list, count.index), var.cns_service_tag)}"
 
   depends_on = [
     "triton_machine.mod",
   ]
 }
 
-resource "triton_firewall_rule" "firewall_allow_https" {
+resource "triton_firewall_rule" "firewall_allow_ingress_https" {
   count = "${var.firewall_enabled ? 1 : 0}"
 
   enabled = true
@@ -177,22 +178,24 @@ resource "triton_firewall_rule" "firewall_allow_https" {
   description = "${format("Allow HTTPS to Fabio - %s",
                    var.instance_name_prefix)}"
 
-  rule = "FROM any TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 443"
+  rule = "${format("FROM any TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 443",
+            var.cns_service_tag)}"
 
   depends_on = [
     "triton_machine.mod",
   ]
 }
 
-resource "triton_firewall_rule" "firewall_allow_9998" {
+resource "triton_firewall_rule" "firewall_allow_ingress_9998" {
   count = "${var.firewall_enabled ? 1 : 0}"
 
   enabled = true
 
-  description = "${format("Allow TCP 9998 to Fabio - %s",
+  description = "${format("Allow TCP/9998 to Fabio - %s",
                    var.instance_name_prefix)}"
 
-  rule = "FROM all vms TO tag \"triton.cns.services\" = \"${var.cns_service_tag}\" ALLOW tcp PORT 9998"
+  rule = "${format("FROM all vms TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 9998",
+            var.cns_service_tag)}"
 
   depends_on = [
     "triton_machine.mod",

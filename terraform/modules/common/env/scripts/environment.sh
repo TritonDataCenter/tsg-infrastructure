@@ -4,25 +4,21 @@ set -e
 set -u
 set -o pipefail
 
-fetch_environment() {
-    local environment="$1"
+fetch_value() {
+    local name="$1"
     local value=''
-
     set +e
-    value="${!environment-}"
+    value="${!name:=''}"
     set -e
-
     echo "$value"
 }
 
 export PATH='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin'
 
-ENVIRONMENT=${ENVIRONMENT-}
-
+NAME=''
 if ! test -t 0; then
-    eval "$(jq -r '@sh "ENVIRONMENT=\(.environment)"')"
+    eval "$(jq -r '@sh "NAME=\(.name)"')"
 fi
 
-ENVIRONMENT="$(fetch_environment "$ENVIRONMENT")"
-
-jq -c -n --arg environment "$ENVIRONMENT" '{ "environment": $environment }'
+VALUE="$(fetch_value "$NAME")"
+jq -c -n --arg value "$VALUE" '{ "value": $value }'

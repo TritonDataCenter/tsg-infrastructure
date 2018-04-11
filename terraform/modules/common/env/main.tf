@@ -5,6 +5,6 @@ data "external" "mod" {
   ]
 
   query = {
-    environment = "${var.environment}"
+    name = "${var.name}"
   }
 }
