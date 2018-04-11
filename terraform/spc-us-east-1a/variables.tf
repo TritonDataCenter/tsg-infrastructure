@@ -1,3 +1,7 @@
+variable "cloud" {
+  default = "spc"
+}
+
 variable "instance_name_prefix" {
   default = "tsg"
 }

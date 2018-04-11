@@ -24,8 +24,8 @@ ARCHIVE_FILE="nomad_${NOMAD_VERSION}_$(detect_os)_$(detect_platform).zip"
 wget -O "${NOMAD_FILES}/${ARCHIVE_FILE}" \
         "https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/${ARCHIVE_FILE}"
 
-unzip "${NOMAD_FILES}/${ARCHIVE_FILE}" -d \
-      "$NOMAD_FILES"
+unzip -q "${NOMAD_FILES}/${ARCHIVE_FILE}" \
+      -d "$NOMAD_FILES"
 
 cp -f "${NOMAD_FILES}/nomad" \
       /usr/local/bin/nomad

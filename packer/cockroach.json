@@ -75,7 +75,8 @@
         "scripts/common/consul.sh",
         "scripts/consul/client/consul.sh",
         "scripts/common/cockroach.sh",
-        "scripts/cockroach/motd.sh"
+        "scripts/cockroach/motd.sh",
+        "scripts/triton/clean-up.sh"
       ]
     }
   ]

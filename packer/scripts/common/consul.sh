@@ -24,8 +24,8 @@ ARCHIVE_FILE="consul_${CONSUL_VERSION}_$(detect_os)_$(detect_platform).zip"
 wget -O "${CONSUL_FILES}/${ARCHIVE_FILE}" \
         "https://releases.hashicorp.com/consul/${CONSUL_VERSION}/${ARCHIVE_FILE}"
 
-unzip "${CONSUL_FILES}/${ARCHIVE_FILE}" -d \
-      "$CONSUL_FILES"
+unzip -q "${CONSUL_FILES}/${ARCHIVE_FILE}" \
+      -d "$CONSUL_FILES"
 
 cp -f "${CONSUL_FILES}/consul" \
       /usr/local/bin/consul
