@@ -1,3 +1,7 @@
+variable "cloud" {
+  default = "jpc"
+}
+
 variable "instance_name_prefix" {
   default = "tsg"
 }
@@ -48,6 +52,14 @@ variable "tsg_fabio_image_name" {
 
 variable "tsg_fabio_image_version" {
   default = "1.5.8"
+}
+
+variable "tsg_api_server_image_name" {
+  default = "tsg-api-server"
+}
+
+variable "tsg_api_server_image_version" {
+  default = "0.1.0"
 }
 
 variable "package" {
