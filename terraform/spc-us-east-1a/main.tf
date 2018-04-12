@@ -291,7 +291,7 @@ module "api_server" {
 module "fabio_hostname_cloud_config" {
   source = "../modules/common/hostname"
 
-  instance_count = 2
+  instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
   instance_type        = "fabio"
@@ -302,7 +302,7 @@ module "fabio" {
 
   cloud = "${var.cloud}"
 
-  instance_count = 2
+  instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
   image                = "${data.triton_image.fabio.id}"
