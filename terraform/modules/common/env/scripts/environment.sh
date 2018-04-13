@@ -20,5 +20,10 @@ if ! test -t 0; then
     eval "$(jq -r '@sh "NAME=\(.name)"')"
 fi
 
+if [[ -z $TEST ]]; then
+    echo '{ "value": "" }'
+    exit 0
+fi
+
 VALUE="$(fetch_value "$NAME")"
 jq -c -n --arg value "$VALUE" '{ "value": $value }'
