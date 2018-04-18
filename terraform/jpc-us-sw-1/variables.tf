@@ -62,6 +62,14 @@ variable "tsg_api_server_image_version" {
   default = "0.1.0"
 }
 
+variable "tsg_deployment_image_name" {
+  default = "tsg-deployment"
+}
+
+variable "tsg_deployment_image_version" {
+  default = "0.1.0"
+}
+
 variable "package" {
   default = "k4-general-kvm-3.75G"
 }
