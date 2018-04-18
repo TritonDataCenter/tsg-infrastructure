@@ -67,4 +67,11 @@ cp -f "${CONSUL_FILES}/consul.logrotate" \
 chown root: /etc/logrotate.d/consul
 chmod 644 /etc/logrotate.d/consul
 
+cat <<'EOF' > /etc/bash_completion.d/consul
+complete -C /usr/local/bin/consul consul
+EOF
+
+chown root: /etc/bash_completion.d/consul
+chmod 644 /etc/bash_completion.d/consul
+
 rm -Rf $CONSUL_FILES

@@ -67,4 +67,11 @@ cp -f "${NOMAD_FILES}/nomad.logrotate" \
 chown root: /etc/logrotate.d/nomad
 chmod 644 /etc/logrotate.d/nomad
 
+cat <<'EOF' > /etc/bash_completion.d/nomad
+complete -C /usr/local/bin/nomad nomad
+EOF
+
+chown root: /etc/bash_completion.d/nomad
+chmod 644 /etc/bash_completion.d/nomad
+
 rm -Rf $NOMAD_FILES
