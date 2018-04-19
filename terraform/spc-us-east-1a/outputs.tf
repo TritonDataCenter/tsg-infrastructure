@@ -33,3 +33,7 @@ output "cockroach_db_cns" {
 output "api_server_cns" {
   value = "${module.api_server.private_cns_domain}"
 }
+
+output "deployment_cns" {
+  value = "${module.deployment.private_cns_domain}"
+}

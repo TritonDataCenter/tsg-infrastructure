@@ -20,7 +20,7 @@ if ! test -t 0; then
     eval "$(jq -r '@sh "NAME=\(.name)"')"
 fi
 
-if [[ -z $TEST ]]; then
+if [[ -z $NAME ]]; then
     echo '{ "value": "" }'
     exit 0
 fi

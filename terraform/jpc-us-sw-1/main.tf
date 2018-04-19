@@ -48,6 +48,12 @@ data "triton_image" "api_server" {
   most_recent = true
 }
 
+data "triton_image" "deployment" {
+  name        = "${var.tsg_deployment_image_name}"
+  version     = "${var.tsg_deployment_image_version}"
+  most_recent = true
+}
+
 module "cns_fragments" {
   source = "../modules/common/cns_structure"
 
@@ -290,7 +296,7 @@ module "api_server" {
 module "fabio_hostname_cloud_config" {
   source = "../modules/common/hostname"
 
-  instance_count = 2
+  instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
   instance_type        = "fabio"
@@ -301,7 +307,7 @@ module "fabio" {
 
   cloud = "${var.cloud}"
 
-  instance_count = 2
+  instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
   image                = "${data.triton_image.fabio.id}"
@@ -333,6 +339,46 @@ module "fabio" {
 
   depends_on = [
     "${module.consul.ips}",
+    "${module.nomad_server.ips}",
+  ]
+}
+
+module "deployment_hostname_cloud_config" {
+  source = "../modules/common/hostname"
+
+  instance_count = 1
+
+  instance_name_prefix = "${var.instance_name_prefix}"
+  instance_type        = "deployment"
+}
+
+module "deployment" {
+  source = "../modules/compute/deployment"
+
+  instance_count = 1
+
+  instance_name_prefix = "${var.instance_name_prefix}"
+  image                = "${data.triton_image.deployment.id}"
+  package              = "${var.package}"
+
+  private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
+
+  cockroach_insecure = "${module.cockroach.insecure}"
+  cockroach_cns_url  = "${module.cockroach.private_cns_domain}"
+
+  nomad_cns_url = "${module.nomad_server.private_cns_domain}"
+  nomad_role    = "deployment"
+
+  cloud_init_config = [
+    "${module.deployment_hostname_cloud_config.rendered}",
+  ]
+
+  networks = [
+    "${module.networking.private_network_id}",
+  ]
+
+  depends_on = [
+    "${module.cockroach.ips}",
     "${module.nomad_server.ips}",
   ]
 }
