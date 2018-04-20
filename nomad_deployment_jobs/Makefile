@@ -1,3 +1,7 @@
+.PHONY: validate-us-east-1a-spc
+validate-us-east-1a-spc: ##Validate US-East-1A SPC Template
+	levant render -var-file=us-east-1a-spc.tf template.nomad
+
 .PHONY: deploy-us-east-1a-spc
 deploy-us-east-1a-spc: ##Deploy US-East-1A SPC
 	levant deploy -log-level=debug -var-file=us-east-1a-spc.tf template.nomad
