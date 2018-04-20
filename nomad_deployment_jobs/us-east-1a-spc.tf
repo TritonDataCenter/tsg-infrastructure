@@ -30,7 +30,7 @@ variable "crdb_cns" {
   default = "cockroach.svc.svctsgstg.us-east-1a.cns.scloud.host"
 }
 
-variable "nomad_dns" {
+variable "nomad_cns" {
   default = "nomad-server.svc.svctsgstg.us-east-1a.cns.scloud.host"
 }
 
