@@ -67,7 +67,7 @@
       "scripts": [
         "scripts/common/consul.sh",
         "scripts/consul/server/consul.sh",
-        "scripts/consul/common/motd.sh",
+        "scripts/triton/motd.sh",
         "scripts/triton/clean-up.sh"
       ]
     }

@@ -70,7 +70,6 @@
         "scripts/common/update.sh",
         "scripts/common/packages.sh",
         "scripts/common/sshd.sh",
-        "scripts/triton/motd.sh",
         "scripts/common/motd.sh",
         "scripts/common/reboot.sh",
         "scripts/common/disable-ipv6.sh",
@@ -78,6 +77,7 @@
         "scripts/common/sudoers.sh",
         "scripts/common/zfs.sh",
         "scripts/triton/grub.sh",
+        "scripts/triton/motd.sh",
         "scripts/common/clean-up.sh"
       ]
     }

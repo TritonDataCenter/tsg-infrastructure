@@ -1,0 +1,7 @@
+# Defaults file for Vault.
+#
+# The directory where the log files going to be stored (default: /var/log/vault).
+# LOG_DIRECTORY=""
+#
+# Additional options, see vault server --help
+# ADDITIONAL_ARGS=""
