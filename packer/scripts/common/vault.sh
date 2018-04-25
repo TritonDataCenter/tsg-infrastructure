@@ -17,7 +17,9 @@ fi
 
 apt_get_update
 
-apt-get --assume-yes install unzip
+apt-get --assume-yes install \
+    unzip \
+    jq
 
 ARCHIVE_FILE="vault_${VAULT_VERSION}_$(detect_os)_$(detect_platform).zip"
 
@@ -59,16 +61,11 @@ chown vault:adm /var/log/vault
 chmod 2750 /var/log/vault
 
 cp -f "${VAULT_FILES}/config.hcl" \
-      /etc/vault/config.hcl
+      "${VAULT_FILES}/config.hcl.tls" \
+      /etc/vault/
 
-chown root: /etc/vault/config.hcl
-chmod 644 /etc/vault/config.hcl
-
-cp -f ${VAULT_FILES}/conf.d/*.hcl \
-      /etc/vault/conf.d
-
-chown root: /etc/vault/conf.d/*.hcl
-chmod 644 /etc/vault/conf.d/*.hcl
+chown root: /etc/vault/*.hcl
+chmod 644 /etc/vault/*.hcl
 
 cp -f "${VAULT_FILES}/vault.default" \
       /etc/default/vault

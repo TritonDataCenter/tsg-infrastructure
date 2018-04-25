@@ -75,6 +75,8 @@
         "scripts/common/consul.sh",
         "scripts/consul/client/consul.sh",
         "scripts/common/vault.sh",
+        "scripts/common/nodejs.sh",
+        "scripts/common/manta.sh",
         "scripts/triton/motd.sh",
         "scripts/triton/clean-up.sh"
       ]
