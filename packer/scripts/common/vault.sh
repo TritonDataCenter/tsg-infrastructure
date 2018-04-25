@@ -64,6 +64,12 @@ cp -f "${VAULT_FILES}/config.hcl" \
 chown root: /etc/vault/config.hcl
 chmod 644 /etc/vault/config.hcl
 
+cp -f ${VAULT_FILES}/conf.d/*.hcl \
+      /etc/vault/conf.d
+
+chown root: /etc/vault/conf.d/*.hcl
+chmod 644 /etc/vault/conf.d/*.hcl
+
 cp -f "${VAULT_FILES}/vault.default" \
       /etc/default/vault
 
