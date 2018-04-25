@@ -66,25 +66,21 @@ sed -i -e \
     "s/PRIVATE_IP/${PRIVATE_IP}/g" \
     /etc/fabio/fabio.properties
 
-sed -i -e \
-    's/.*ListenAddress.*$//g' \
-    /etc/ssh/sshd_config
+mkdir -p "${FABIO_HOME}/.tls"
 
-mkdir -p "${FABIO_HOME}/.cs"
-
-chown fabio: "${FABIO_HOME}/.cs"
-chmod 700 "${FABIO_HOME}/.cs"
+chown fabio: "${FABIO_HOME}/.tls"
+chmod 700 "${FABIO_HOME}/.tls"
 
 mget -q \
-     -o "${FABIO_HOME}/.cs/cert.pem" \
+     -o "${FABIO_HOME}/.tls/cert.pem" \
         "${MANTA_PATH}/cert.pem"
 
 mget -q \
-     -o "${FABIO_HOME}/.cs/key.pem" \
+     -o "${FABIO_HOME}/.tls/key.pem" \
         "${MANTA_PATH}/key.pem"
 
-chown fabio: "${FABIO_HOME}/.cs/cert.pem" \
-             "${FABIO_HOME}/.cs/key.pem"
+chown fabio: "${FABIO_HOME}/.tls/cert.pem" \
+             "${FABIO_HOME}/.tls/key.pem"
 
-chmod 700 "${FABIO_HOME}/.cs/cert.pem" \
-          "${FABIO_HOME}/.cs/key.pem"
+chmod 700 "${FABIO_HOME}/.tls/cert.pem" \
+          "${FABIO_HOME}/.tls/key.pem"
