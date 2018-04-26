@@ -80,7 +80,7 @@
         "scripts/deployment/nomad.sh",
         "scripts/common/levant.sh",
         "scripts/deployment/packages.sh",
-        "scripts/deployment/motd.sh",
+        "scripts/triton/motd.sh",
         "scripts/triton/clean-up.sh"
       ]
     }

@@ -8,6 +8,7 @@ source /var/tmp/helpers/default.sh
 
 PACKAGES=(
     'git'
+    'make'
     'unzip'
     'xz-utils'
     'zip'

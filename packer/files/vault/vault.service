@@ -1,29 +1,33 @@
 [Unit]
-Description=Nomad - A flexible, enterprise-grade cluster scheduler.
+Description=Vault - A tool for managing secrets.
 After=network.target
 
 [Service]
-Environment="LOG_DIRECTORY=/var/log/nomad"
-EnvironmentFile=-/etc/default/nomad
+Environment="LOG_DIRECTORY=/var/log/vault"
+Environment="ADDITIONAL_ARGS=-log-level info"
+EnvironmentFile=-/etc/default/vault
 PermissionsStartOnly=true
+AmbientCapabilities=CAP_IPC_LOCK
 WorkingDirectory=/
 ExecStart=/bin/bash -c \
-	"exec /usr/local/bin/nomad agent \
-		-config /etc/nomad/config.hcl \
-		-config /etc/nomad/conf.d \
+	"exec /usr/local/bin/vault server \
+		-config /etc/vault/config.hcl \
+		-config /etc/vault/conf.d \
 		$ADDITIONAL_ARGS \
-		&>>${LOG_DIRECTORY}/nomad.log"
+		&>>${LOG_DIRECTORY}/vault.log"
 ExecReload=/bin/kill -HUP $MAINPID
-User=nomad
-Group=nomad
+User=vault
+Group=vault
 ProtectHome=yes
 ProtectSystem=full
 PrivateTmp=yes
 PrivateDevices=yes
+SecureBits=keep-caps
 NoNewPrivileges=yes
 LimitNOFILE=65536
 LimitNPROC=infinity
 LimitCORE=infinity
+LimitMEMLOCK=infinity
 TasksMax=infinity
 TimeoutStartSec=0
 KillMode=process

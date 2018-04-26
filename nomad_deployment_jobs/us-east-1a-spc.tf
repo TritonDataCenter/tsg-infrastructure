@@ -43,5 +43,5 @@ variable "api_version" {
 }
 
 variable "api_release_version" {
-  default = "0.2.8"
+  default = "0.2.11"
 }

@@ -77,7 +77,7 @@
         "scripts/consul/client/consul.sh",
         "scripts/common/nomad.sh",
         "scripts/nomad/{{user `nomad_deployment_type`}}/nomad.sh",
-        "scripts/nomad/common/motd.sh",
+        "scripts/triton/motd.sh",
         "scripts/triton/clean-up.sh"
       ]
     }

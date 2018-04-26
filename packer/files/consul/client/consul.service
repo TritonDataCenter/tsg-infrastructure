@@ -14,13 +14,14 @@ ExecStart=/bin/bash -c \
 		-config-dir /etc/consul/conf.d \
 		$ADDITIONAL_ARGS \
 		&>>${LOG_DIRECTORY}/consul.log"
-ExecReload=/bin/kill -9 $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
 User=consul
 Group=consul
 ProtectHome=yes
 ProtectSystem=full
 PrivateTmp=yes
 PrivateDevices=yes
+NoNewPrivileges=yes
 LimitNOFILE=65536
 LimitNPROC=infinity
 LimitCORE=infinity

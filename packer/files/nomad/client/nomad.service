@@ -13,7 +13,7 @@ ExecStart=/bin/bash -c \
 		-config /etc/nomad/conf.d \
 		$ADDITIONAL_ARGS \
 		&>>${LOG_DIRECTORY}/nomad.log"
-ExecReload=/bin/kill -9 $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
 ProtectHome=yes
 ProtectSystem=full
 PrivateTmp=yes

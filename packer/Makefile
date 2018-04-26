@@ -7,6 +7,7 @@ COCKROACH_VERSION ?= "1.1.7"
 FABIO_VERSION ?= "1.5.8"
 LEVANT_VERSION ?= "0.1.0"
 DEPLOYMENT_VERSION ?= "0.1.0"
+VAULT_VERSION ?= "0.10.0"
 API_SERVER_VERSION ?= "0.1.0"
 SOURCE_IMAGE_VERSION ?= "0.1.0"
 SOURCE_IMAGE_NAME ?= "tsg-base"
@@ -106,6 +107,18 @@ validate-deployment: ## Validate the Deployment template.
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		deployment.json
 
+.PHONY: validate-vault
+validate-vault: ## Validate the Vault template.
+	packer validate \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "version=$(DEPLOYMENT_VERSION)" \
+		-var "consul_version=$(CONSUL_VERSION)" \
+		-var "vault_version=$(VAULT_VERSION)" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		vault.json
+
 .PHONY: base
 base: validate-base ## Build the Base template.
 	packer build \
@@ -196,6 +209,18 @@ deployment: validate-deployment ## Build the Deployment template.
 		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
 		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
 		deployment.json
+
+.PHONY: vault
+vault: validate-vault ## Build the Vault template.
+	packer build \
+		-var "triton_account=$(TRITON_ACCOUNT)" \
+		-var "triton_key_id=$(TRITON_KEY_ID)" \
+		-var "version=$(DEPLOYMENT_VERSION)" \
+		-var "consul_version=$(CONSUL_VERSION)" \
+		-var "vault_version=$(VAULT_VERSION)" \
+		-var "source_machine_image=$(SOURCE_IMAGE_NAME)" \
+		-var "source_machine_image_version=$(SOURCE_IMAGE_VERSION)" \
+		vault.json
 
 .PHONY: help
 help: ## Show this help screen.

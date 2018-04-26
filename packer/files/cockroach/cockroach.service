@@ -44,6 +44,7 @@ ProtectHome=yes
 ProtectSystem=full
 PrivateTmp=yes
 PrivateDevices=yes
+NoNewPrivileges=yes
 LimitNOFILE=1048576
 LimitNPROC=infinity
 LimitCORE=infinity

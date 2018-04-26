@@ -1,0 +1,29 @@
+cluster_name = "CLUSTER_NAME"
+
+disable_mlock = false
+
+default_lease_ttl = "24h"
+max_lease_ttl     = "720h"
+
+ui = true
+
+listener "tcp" {
+  address         = "PRIVATE_IP:8200"
+  cluster_address = "PRIVATE_IP:8201"
+
+  tls_disable = false
+
+  tls_cert_file = "/mnt/vault/.tls/cert.pem"
+  tls_key_file  = "/mnt/vault/.tls/key.pem"
+
+  tls_min_version   = "tls12"
+  tls_cipher_suites = "0xc02f,0xc030,0xcca8,0xc02b,0xc02c,0xcca9"
+
+  tls_prefer_server_cipher_suites = true
+}
+
+storage "consul" {
+  address = "127.0.0.1:8500"
+  scheme  = "http"
+  path    = "vault/"
+}
