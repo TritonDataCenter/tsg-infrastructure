@@ -26,4 +26,4 @@ for action in disable stop; do
     systemctl "$action" consul || true
 done
 
-rm -Rf $CONSUL_FILES
+rm -Rf "$CONSUL_FILES"

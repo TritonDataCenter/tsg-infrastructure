@@ -1,5 +1,6 @@
 locals {
-  private_cns_domain = "${format("%s.%s", var.cns_service_tag, var.cns_fragment)}"
+  private_cns_domain = "${format("%s.%s", var.cns_service_tag,
+                          var.private_cns_fragment)}"
 }
 
 data "triton_datacenter" "mod" {}

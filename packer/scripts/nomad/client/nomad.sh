@@ -36,4 +36,4 @@ for action in disable stop; do
     systemctl "$action" nomad || true
 done
 
-rm -Rf $NOMAD_FILES
+rm -Rf "$NOMAD_FILES"

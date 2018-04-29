@@ -1,6 +1,9 @@
 locals {
-  private_cns_domain = "${format("%s.%s", var.cns_service_tag, var.private_cns_fragment)}"
-  public_cns_domain = "${format("%s.%s", var.cns_service_tag, var.public_cns_fragment)}"
+  private_cns_domain = "${format("%s.%s", var.cns_service_tag,
+                          var.private_cns_fragment)}"
+
+  public_cns_domain = "${format("%s.%s", var.cns_service_tag,
+                         var.public_cns_fragment)}"
 }
 
 resource "null_resource" "depends_on" {
@@ -66,12 +69,11 @@ resource "triton_firewall_rule" "mod" {
   enabled = true
 
   description = "${format("Allow SSH to Bastion from %s - %s",
-                   var.firewall_targets_list[count.index],
+                   element(var.firewall_targets_list, count.index),
                    var.instance_name_prefix)}"
 
-  rule = <<EOS
-FROM ${var.firewall_targets_list[count.index]} TO tag "triton.cns.services" = "${var.cns_service_tag}" ALLOW tcp PORT 22
-EOS
+  rule = "${format("FROM %s TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 22",
+            element(var.firewall_targets_list, count.index), var.cns_service_tag)}"
 
   depends_on = [
     "triton_machine.mod",

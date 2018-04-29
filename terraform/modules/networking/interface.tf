@@ -28,6 +28,7 @@ variable "internet_nat" {
 
 variable "resolvers" {
   default = [
+    "1.1.1.1",
     "8.8.8.8",
     "4.2.2.2",
   ]

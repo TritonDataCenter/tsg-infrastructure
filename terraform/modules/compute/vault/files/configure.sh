@@ -4,11 +4,15 @@ set -e
 set -o pipefail
 
 detect_private_address() {
+    local address="$1"
+    shift
+
     local status=0
     set +e
-    [[ "$1" =~ (10\.|172\.[123]|192\.168\.) ]]
+    [[ "$address" =~ (10\.|172\.[123]|192\.168\.) ]]
     status=$?
     set -e
+
     return $status
 }
 
@@ -16,10 +20,10 @@ export PATH='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin'
 
 readonly VAULT_HOME='/mnt/vault'
 
-[[ $EUID == 0 ]] || exec sudo bash "$0" "$@"
+[[ $EUID == 0 ]] || exec sudo -H -E -n "$0" "$@"
 
 if [[ ! -d $VAULT_HOME ]]; then
-    echo "Directory '$VAULT_HOME' could not be found, aborting ..." >&2
+    echo "Directory '$VAULT_HOME' could not be found, aborting ..."
     exit 1
 fi
 

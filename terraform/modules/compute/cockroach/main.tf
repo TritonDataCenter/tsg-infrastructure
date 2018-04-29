@@ -1,5 +1,6 @@
 locals {
-  private_cns_domain = "${format("%s.%s", var.cns_service_tag, var.cns_fragment)}"
+  private_cns_domain = "${format("%s.%s", var.cns_service_tag,
+                          var.private_cns_fragment)}"
 }
 
 data "triton_account" "mod" {}
@@ -82,7 +83,7 @@ resource "random_shuffle" "mod" {
   result_count = 1
 }
 
-resource "null_resource" "mod" {
+resource "null_resource" "bootstrap" {
   count = "${var.instance_count}"
 
   triggers {
@@ -94,14 +95,13 @@ resource "null_resource" "mod" {
     user         = "ubuntu"
     host         = "${element(triton_machine.mod.*.primaryip, count.index)}"
     bastion_host = "${var.bastion_cns_url}"
-    timeout      = "120s"
+    timeout      = "180s"
   }
 
   provisioner "file" {
     content = <<EOF
 export NODES='${join(",", sort(flatten(triton_machine.mod.*.ips)))}'
 export INSECURE='${var.insecure ? "true" : "false"}'
-export LEADER='${element(random_shuffle.mod.result, 0)}'
 EOF
 
     destination = "/var/tmp/.cockroach-cluster"
@@ -113,4 +113,36 @@ EOF
       "${format("%s/files/%s", path.module, "start.sh")}",
     ]
   }
+}
+
+resource "null_resource" "initialize" {
+  triggers {
+    cockroach_instance_ids = "${join(",", triton_machine.mod.*.id)}"
+  }
+
+  connection {
+    type         = "ssh"
+    user         = "ubuntu"
+    host         = "${element(random_shuffle.mod.result, 0)}"
+    bastion_host = "${var.bastion_cns_url}"
+    timeout      = "180s"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+export INSECURE='${var.insecure ? "true" : "false"}'
+EOF
+
+    destination = "/var/tmp/.cockroach-cluster"
+  }
+
+  provisioner "remote-exec" {
+    scripts = [
+      "${format("%s/files/%s", path.module, "initialize.sh")}",
+    ]
+  }
+
+  depends_on = [
+    "null_resource.bootstrap",
+  ]
 }

@@ -5,6 +5,9 @@
     "description": "Triton Service Groups - Deployment",
     "version": "",
     "cockroach_version": "",
+    "consul_version": "",
+    "consul_cli_version": "",
+    "vault_version": "",
     "nomad_version": "",
     "levant_version": "",
     "build_number": "{{env `BUILD_NUMBER`}}",
@@ -52,6 +55,16 @@
     },
     {
       "type": "file",
+      "source": "files/consul",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
+      "source": "files/vault",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
       "source": "files/cockroach",
       "destination": "/var/tmp"
     },
@@ -67,6 +80,9 @@
         "PACKER_BUILD_NAME={{user `name`}}",
         "PACKER_BUILD_TIMESTAMP={{timestamp}}",
         "PACKER_BUILD_VERSION={{user `version`}}",
+        "CONSUL_VERSION={{user `consul_version`}}",
+        "CONSUL_CLI_VERSION={{user `consul_cli_version`}}",
+        "LEVANT_VERSION={{user `vault_version`}}",
         "COCKROACH_VERSION={{user `cockroach_version`}}",
         "NOMAD_VERSION={{user `nomad_version`}}",
         "LEVANT_VERSION={{user `levant_version`}}"
@@ -74,6 +90,11 @@
       "execute_command": "{{ .Vars }} sudo -H -S -E -n bash {{if eq (user `debug`) `true` }}-x{{end}} '{{ .Path }}'",
       "expect_disconnect": "true",
       "scripts": [
+        "scripts/common/consul.sh",
+        "scripts/deployment/consul.sh",
+        "scripts/common/consul-cli.sh",
+        "scripts/common/vault.sh",
+        "scripts/deployment/vault.sh",
         "scripts/common/cockroach.sh",
         "scripts/deployment/cockroach.sh",
         "scripts/common/nomad.sh",

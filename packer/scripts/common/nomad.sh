@@ -74,4 +74,4 @@ EOF
 chown root: /etc/bash_completion.d/nomad
 chmod 644 /etc/bash_completion.d/nomad
 
-rm -Rf $NOMAD_FILES
+rm -Rf "$NOMAD_FILES"

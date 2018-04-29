@@ -6,7 +6,13 @@ locals {
 
   private_cns_domain = "${format("%s.%s", var.cns_service_tag,
                           var.private_cns_fragment)}"
+
+  manta_path = "${format("/%s/stor/certificates/%s/%s",
+                  data.triton_account.mod.login, var.cloud,
+                  data.triton_datacenter.mod.name)}"
 }
+
+data "triton_account" "mod" {}
 
 data "triton_datacenter" "mod" {}
 
@@ -102,7 +108,7 @@ module "manta_helper" {
   cloud = "${var.cloud}"
 }
 
-resource "null_resource" "mod" {
+resource "null_resource" "bootstrap" {
   count = "${var.instance_count}"
 
   triggers {
@@ -114,7 +120,7 @@ resource "null_resource" "mod" {
     user         = "ubuntu"
     host         = "${element(triton_machine.mod.*.primaryip, count.index)}"
     bastion_host = "${var.bastion_cns_url}"
-    timeout      = "120s"
+    timeout      = "180s"
   }
 
   provisioner "file" {
@@ -122,16 +128,10 @@ resource "null_resource" "mod" {
 export MANTA_URL='${coalesce(module.manta_url.value, module.manta_helper.manta_url)}'
 export MANTA_USER='${module.triton_account.value}'
 export MANTA_KEY_ID='${module.triton_key_id.value}'
+export MANTA_PATH='${local.manta_path}'
 EOF
 
     destination = "/var/tmp/.manta"
-  }
-
-  provisioner "file" {
-    content = "${format("export MANTA_PATH='~~/stor/certificates/%s/%s'",
-                         var.cloud, data.triton_datacenter.mod.name)}"
-
-    destination = "/var/tmp/.certificate"
   }
 
   provisioner "remote-exec" {
@@ -179,6 +179,22 @@ resource "triton_firewall_rule" "firewall_allow_ingress_https" {
                    var.instance_name_prefix)}"
 
   rule = "${format("FROM any TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 443",
+            var.cns_service_tag)}"
+
+  depends_on = [
+    "triton_machine.mod",
+  ]
+}
+
+resource "triton_firewall_rule" "firewall_allow_ingress_8301" {
+  count = "${var.firewall_enabled ? 1 : 0}"
+
+  enabled = true
+
+  description = "${format("Allow TCP/8301 to Fabio - %s",
+                   var.instance_name_prefix)}"
+
+  rule = "${format("FROM any TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 8301",
             var.cns_service_tag)}"
 
   depends_on = [

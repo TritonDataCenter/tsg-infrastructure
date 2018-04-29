@@ -25,7 +25,7 @@ wget -O "${COCKROACH_FILES}/${ARCHIVE_FILE}" \
     "https://binaries.cockroachdb.com/${ARCHIVE_FILE}"
 
 tar -zxf "${COCKROACH_FILES}/${ARCHIVE_FILE}" --strip=1 -C \
-         $COCKROACH_FILES
+         "$COCKROACH_FILES"
 
 cp -f "${COCKROACH_FILES}/cockroach" \
       /usr/local/bin
@@ -88,4 +88,4 @@ cockroach gen autocomplete \
 chown root: /etc/bash_completion.d/cockroach
 chmod 644 /etc/bash_completion.d/cockroach
 
-rm -Rf $COCKROACH_FILES
+rm -Rf "$COCKROACH_FILES"

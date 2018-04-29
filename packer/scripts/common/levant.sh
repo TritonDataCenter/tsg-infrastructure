@@ -28,4 +28,4 @@ cp -f "${LEVANT_FILES}/levant" \
 chown root: /usr/local/bin/levant
 chmod 755 /usr/local/bin/levant
 
-rm -Rf $LEVANT_FILES
+rm -Rf "$LEVANT_FILES"

@@ -18,12 +18,20 @@ variable "instance_count" {
   default = 1
 }
 
-variable "cockroach_insecure" {
-  default = "false"
+variable "consul_cns_url" {
+  type = "string"
+}
+
+variable "vault_cns_url" {
+  type = "string"
 }
 
 variable "cockroach_cns_url" {
   type = "string"
+}
+
+variable "cockroach_insecure" {
+  default = "false"
 }
 
 variable "nomad_cns_url" {

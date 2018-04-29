@@ -4,39 +4,36 @@ set -e
 set -o pipefail
 
 detect_private_address() {
+    local address="$1"
+    shift
+
     local status=0
     set +e
-    [[ "$1" =~ (10\.|172\.[123]|192\.168\.) ]]
+    [[ "$address" =~ (10\.|172\.[123]|192\.168\.) ]]
     status=$?
     set -e
+
     return $status
 }
 
 export PATH='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin'
 
 readonly MANTA_FILE='/var/tmp/.manta'
-readonly CERTIFICATE_FILE='/var/tmp/.certificate'
-
 readonly FABIO_HOME='/mnt/fabio'
 
-[[ $EUID == 0 ]] || exec sudo bash "$0" "$@"
+[[ $EUID == 0 ]] || exec sudo -H -E -n "$0" "$@"
 
-FILES=( MANTA_FILE CERTIFICATE_FILE )
-for file in "${FILES[@]}"; do
-    FILE=${!file}
-
-    if [[ -f $FILE ]]; then
-        . $FILE
-    else
-        echo "File '$FILE' could not be found, aborting ..." >&2
-        exit 1
-    fi
-done
+if [[ -f $MANTA_FILE ]]; then
+    . $MANTA_FILE
+else
+    echo "File '$MANTA_FILE' could not be found, aborting ..."
+    exit 1
+fi
 
 trap "rm -f $MANTA_FILE" EXIT
 
 if [[ ! -d $FABIO_HOME ]]; then
-    echo "Directory '$FABIO_HOME' could not be found, aborting ..." >&2
+    echo "Directory '$FABIO_HOME' could not be found, aborting ..."
     exit 1
 fi
 

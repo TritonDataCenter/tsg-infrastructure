@@ -62,7 +62,7 @@ chmod 2750 /var/log/vault
 
 cp -f "${VAULT_FILES}/config.hcl" \
       "${VAULT_FILES}/config.hcl.tls" \
-      /etc/vault/
+      /etc/vault
 
 chown root: /etc/vault/*.hcl
 chmod 644 /etc/vault/*.hcl
@@ -98,4 +98,4 @@ EOF
 chown root: /etc/bash_completion.d/vault
 chmod 644 /etc/bash_completion.d/vault
 
-rm -Rf $VAULT_FILES
+rm -Rf "$VAULT_FILES"

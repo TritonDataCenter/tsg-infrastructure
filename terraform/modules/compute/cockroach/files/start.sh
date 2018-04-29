@@ -7,12 +7,12 @@ export PATH='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin'
 
 readonly COCKROACH_CLUSTER_FILE='/var/tmp/.cockroach-cluster'
 
-[[ $EUID == 0 ]] || exec sudo bash "$0" "$@"
+[[ $EUID == 0 ]] || exec sudo -H -E -n "$0" "$@"
 
 if [[ -f $COCKROACH_CLUSTER_FILE ]]; then
     . $COCKROACH_CLUSTER_FILE
 else
-    echo "File '$COCKROACH_CLUSTER_FILE' could not be found, aborting ..." >&2
+    echo "File '$COCKROACH_CLUSTER_FILE' could not be found, aborting ..."
     exit 1
 fi
 
@@ -37,7 +37,7 @@ done
 STATUS=0
 for retries in {1..30}; do
     set +e
-    curl -s --connect-timeout 5 "http://${HOST}:8080/health" &>/dev/null
+    curl -sk -L --connect-timeout 5 "http://${HOST}:8080/health" &>/dev/null
     STATUS=$?
     set -e
 
@@ -45,20 +45,3 @@ for retries in {1..30}; do
 
     sleep 1
 done
-
-IPS=($(hostname -I))
-
-FOUND_LEADER=
-for address in "${IPS[@]}"; do
-    if [[ $LEADER == "$address" ]]; then
-        FOUND_LEADER=true
-        break
-    fi
-done
-
-if [[ -n $FOUND_LEADER ]]; then
-    INIT_ARGUMENTS="--host $HOST"
-    [[ -n $INSECURE ]] && INIT_ARGUMENTS+=' --insecure'
-
-    cockroach init $INIT_ARGUMENTS
-fi

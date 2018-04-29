@@ -5,6 +5,7 @@
     "description": "Triton Service Groups - Vault",
     "version": "",
     "consul_version": "",
+    "consul_template_version": "",
     "vault_version": "",
     "build_number": "{{env `BUILD_NUMBER`}}",
     "triton_url": "{{env `TRITON_URL`}}",
@@ -56,7 +57,22 @@
     },
     {
       "type": "file",
+      "source": "files/consul-template",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
       "source": "files/vault",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
+      "source": "files/haproxy",
+      "destination": "/var/tmp"
+    },
+    {
+      "type": "file",
+      "source": "files/nodejs",
       "destination": "/var/tmp"
     },
     {
@@ -67,6 +83,7 @@
         "PACKER_BUILD_TIMESTAMP={{timestamp}}",
         "PACKER_BUILD_VERSION={{if eq (user `version`) ``}}{{user `vault_version`}}{{else}}{{user `version`}}{{end}}",
         "CONSUL_VERSION={{user `consul_version`}}",
+        "CONSUL_TEMPLATE_VERSION={{user `consul_template_version`}}",
         "VAULT_VERSION={{user `vault_version`}}"
       ],
       "execute_command": "{{ .Vars }} sudo -H -S -E -n bash {{if eq (user `debug`) `true` }}-x{{end}} '{{ .Path }}'",
@@ -74,7 +91,10 @@
       "scripts": [
         "scripts/common/consul.sh",
         "scripts/consul/client/consul.sh",
+        "scripts/common/consul-template.sh",
+        "scripts/vault/consul-template.sh",
         "scripts/common/vault.sh",
+        "scripts/common/haproxy.sh",
         "scripts/common/nodejs.sh",
         "scripts/common/manta.sh",
         "scripts/triton/motd.sh",

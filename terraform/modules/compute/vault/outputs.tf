@@ -41,6 +41,22 @@ output "cluster_name" {
              var.instance_name_prefix))}"
 }
 
+output "secret_shares" {
+  value = "${var.secret_shares}"
+}
+
+output "secret_threshold" {
+  value = "${var.secret_threshold}"
+}
+
+output "psk_key" {
+  value = "${random_string.mod.result}"
+}
+
+output "manta_path" {
+  value = "${local.manta_path}"
+}
+
 output "private_cns_domain" {
   value = "${local.private_cns_domain}"
 }

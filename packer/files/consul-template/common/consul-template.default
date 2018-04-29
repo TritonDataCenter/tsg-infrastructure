@@ -1,0 +1,7 @@
+# Defaults file for Consul Template.
+#
+# The directory where the log files going to be stored (default: /var/log/consul-template).
+# LOG_DIRECTORY=""
+#
+# Additional options, see consul-template --help
+# ADDITIONAL_ARGS=""

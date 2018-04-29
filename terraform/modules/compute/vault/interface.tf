@@ -30,6 +30,18 @@ variable "cluster_name" {
   default = ""
 }
 
+variable "secret_shares" {
+  default = 5
+}
+
+variable "secret_threshold" {
+  default = 3
+}
+
+variable "psk_key_length" {
+  default = 32
+}
+
 variable "root_authorized_keys" {
   default = ""
 }
@@ -48,6 +60,10 @@ variable "user_script" {
 
 variable "firewall_enabled" {
   default = false
+}
+
+variable "firewall_targets_list" {
+  default = ["any"]
 }
 
 variable "networks" {

@@ -74,4 +74,4 @@ EOF
 chown root: /etc/bash_completion.d/consul
 chmod 644 /etc/bash_completion.d/consul
 
-rm -Rf $CONSUL_FILES
+rm -Rf "$CONSUL_FILES"

@@ -21,8 +21,10 @@ if [[ -n $NODEJS_VERSION ]]; then
     NODEJS_PACKAGE=$(printf 'nodejs=%s*' "$NODEJS_VERSION")
 fi
 
-wget -O "${NODEJS_FILES}/nodesource.key" \
-    https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+if [[ ! -f  "${NODEJS_FILES}/nodesource.key" ]]; then
+    wget -O "${NODEJS_FILES}/nodesource.key" \
+        https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+fi
 
 apt-key add "${NODEJS_FILES}/nodesource.key"
 

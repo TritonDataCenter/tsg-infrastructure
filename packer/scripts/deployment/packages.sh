@@ -8,6 +8,7 @@ source /var/tmp/helpers/default.sh
 
 PACKAGES=(
     'git'
+    'jq'
     'make'
     'unzip'
     'xz-utils'

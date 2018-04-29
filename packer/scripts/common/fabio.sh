@@ -86,4 +86,4 @@ EOF
 chown root: /etc/sysctl.d/99-fabio.conf
 chmod 644 /etc/sysctl.d/99-fabio.conf
 
-rm -Rf $FABIO_FILES
+rm -Rf "$FABIO_FILES"

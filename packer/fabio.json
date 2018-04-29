@@ -60,6 +60,11 @@
       "destination": "/var/tmp"
     },
     {
+      "type": "file",
+      "source": "files/nodejs",
+      "destination": "/var/tmp"
+    },
+    {
       "type": "shell",
       "environment_vars": [
         "BUILD_NUMBER={{user `build_number`}}",

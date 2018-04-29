@@ -5,6 +5,7 @@ data "external" "mod" {
   ]
 
   query = {
-    name = "${var.name}"
+    name              = "${var.name}"
+    allow_empty_value = "${var.allow_empty_value}"
   }
 }

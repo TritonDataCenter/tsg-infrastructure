@@ -1,0 +1,36 @@
+[Unit]
+Description=Consul Template - A generic template rendering and notifications with Consul.
+After=network.target
+
+[Service]
+Environment="LOG_DIRECTORY=/var/log/consul-template"
+EnvironmentFile=-/etc/default/consul-template
+PermissionsStartOnly=true
+WorkingDirectory=/
+ExecStart=/bin/bash -c \
+	"exec /usr/local/bin/consul-template \
+		-config /etc/consul-template/config.hcl \
+		-config /etc/consul-template/conf.d \
+		$ADDITIONAL_ARGS \
+		&>>${LOG_DIRECTORY}/consul-template.log"
+ExecStop=/bin/kill -INT $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
+ProtectHome=yes
+ProtectSystem=yes
+PrivateTmp=yes
+PrivateDevices=yes
+NoNewPrivileges=yes
+LimitNOFILE=65536
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+TimeoutStartSec=0
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=1
+StartLimitBurst=3
+StartLimitInterval=60s
+
+[Install]
+WantedBy=multi-user.target

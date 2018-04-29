@@ -1,3 +1,7 @@
+variable "private_cns_fragment" {
+  type = "string"
+}
+
 variable "instance_name_prefix" {
   type = "string"
 }
@@ -53,5 +57,3 @@ variable "tags" {
 variable "depends_on" {
   default = []
 }
-
-variable "cns_fragment" {}

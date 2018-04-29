@@ -1,16 +1,18 @@
-TRITON_ACCOUNT ?= ""
-TRITON_KEY_ID ?= ""
-BASE_IMAGE_VERSION ?= "0.1.0"
-CONSUL_VERSION ?= "1.0.6"
-NOMAD_VERSION ?= "0.7.1"
-COCKROACH_VERSION ?= "1.1.7"
-FABIO_VERSION ?= "1.5.8"
-LEVANT_VERSION ?= "0.1.0"
-DEPLOYMENT_VERSION ?= "0.1.0"
-VAULT_VERSION ?= "0.10.0"
-API_SERVER_VERSION ?= "0.1.0"
-SOURCE_IMAGE_VERSION ?= "0.1.0"
-SOURCE_IMAGE_NAME ?= "tsg-base"
+TRITON_ACCOUNT ?=
+TRITON_KEY_ID ?=
+BASE_IMAGE_VERSION ?= 0.1.0
+CONSUL_VERSION ?= 1.0.6
+CONSUL_TEMPLATE_VERSION ?= 0.19.4
+CONSUL_CLI_VERSION ?= 0.3.1
+NOMAD_VERSION ?= 0.7.1
+COCKROACH_VERSION ?= 1.1.7
+FABIO_VERSION ?= 1.5.8
+LEVANT_VERSION ?= 0.1.0
+DEPLOYMENT_VERSION ?= 0.1.0
+VAULT_VERSION ?= 0.10.0
+API_SERVER_VERSION ?= 0.1.0
+SOURCE_IMAGE_VERSION ?= 0.1.0
+SOURCE_IMAGE_NAME ?= tsg-base
 
 .SUFFIXES:
 
@@ -100,6 +102,9 @@ validate-deployment: ## Validate the Deployment template.
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
 		-var "version=$(DEPLOYMENT_VERSION)" \
+		-var "consul_version=$(CONSUL_VERSION)" \
+		-var "consul_cli_version=$(CONSUL_CLI_VERSION)" \
+		-var "vault_version=$(VAULT_VERSION)" \
 		-var "cockroach_version=$(COCKROACH_VERSION)" \
 		-var "nomad_version=$(NOMAD_VERSION)" \
 		-var "levant_version=$(LEVANT_VERSION)" \
@@ -203,6 +208,9 @@ deployment: validate-deployment ## Build the Deployment template.
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
 		-var "version=$(DEPLOYMENT_VERSION)" \
+		-var "consul_version=$(CONSUL_VERSION)" \
+		-var "consul_cli_version=$(CONSUL_CLI_VERSION)" \
+		-var "vault_version=$(VAULT_VERSION)" \
 		-var "cockroach_version=$(COCKROACH_VERSION)" \
 		-var "nomad_version=$(NOMAD_VERSION)" \
 		-var "levant_version=$(LEVANT_VERSION)" \

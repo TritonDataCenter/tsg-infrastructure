@@ -1,3 +1,7 @@
+variable "private_cns_fragment" {
+  type = "string"
+}
+
 variable "instance_name_prefix" {
   type = "string"
 }
@@ -47,7 +51,7 @@ variable "networks" {
 }
 
 variable "cns_service_tag" {
-  default = "apiserver"
+  default = "api-server"
 }
 
 variable "metadata" {
@@ -61,6 +65,3 @@ variable "tags" {
 variable "depends_on" {
   default = []
 }
-
-variable "private_cns_fragment" {}
-

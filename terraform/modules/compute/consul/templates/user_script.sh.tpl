@@ -4,11 +4,15 @@ set -e
 set -o pipefail
 
 detect_private_address() {
+    local address="$1"
+    shift
+
     local status=0
     set +e
-    [[ "$1" =~ (10\.|172\.[123]|192\.168\.) ]]
+    [[ "$address" =~ (10\.|172\.[123]|192\.168\.) ]]
     status=$?
     set -e
+
     return $status
 }
 
@@ -37,7 +41,7 @@ for address in "$${IPS[@]}"; do
     fi
 done
 
-cat <<EOF  > /etc/profile.d/consul.sh
+cat <<EOF > /etc/profile.d/consul.sh
 export CONSUL_HTTP_ADDR='http://$${IP_ADDRESS:=127.0.0.1}:8500'
 EOF
 
