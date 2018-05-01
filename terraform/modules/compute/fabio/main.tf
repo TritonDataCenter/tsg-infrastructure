@@ -7,9 +7,9 @@ locals {
   private_cns_domain = "${format("%s.%s", var.cns_service_tag,
                           var.private_cns_fragment)}"
 
-  manta_path = "${format("/%s/stor/certificates/%s/%s",
-                  data.triton_account.mod.login, var.cloud,
-                  data.triton_datacenter.mod.name)}"
+  manta_path = "${format("/%s/stor/tsg/%s/%s/%s",
+                  data.triton_account.mod.login, var.cns_service_tag,
+                  var.cloud, data.triton_datacenter.mod.name)}"
 }
 
 data "triton_account" "mod" {}
@@ -23,7 +23,9 @@ data "template_file" "mod" {
 
   vars {
     data_center_name = "${data.triton_datacenter.mod.name}"
-    consul_cns_url   = "${var.consul_cns_url}"
+
+    vault_cns_url  = "${var.vault_cns_url}"
+    consul_cns_url = "${var.consul_cns_url}"
   }
 }
 
@@ -136,8 +138,8 @@ EOF
 
   provisioner "remote-exec" {
     scripts = [
-      "${format("%s/files/%s", path.module, "configure.sh")}",
-      "${format("%s/files/%s", path.module, "start.sh")}",
+      "${format("%s/files/%s", path.module, "001-configure.sh")}",
+      "${format("%s/files/%s", path.module, "002-start.sh")}",
     ]
   }
 }

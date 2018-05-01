@@ -20,22 +20,32 @@ fi
 
 systemctl --system daemon-reload
 
-if which ntpdate &>/dev/null; then
-    systemctl stop ntp || true
+if which chronyc &>/dev/null; then
+    systemctl stop chrony || true
 
-    for retries in {1..5}; do
-        ntpdate -4 -b pool.ntp.org &>/dev/null && break
+    for (( i = 0; i < 5; i++ )); do
+        chronyd -4 -q 'pool pool.ntp.org iburst' &>/dev/null && break
     done
-fi
 
-systemctl start ntp
+    systemctl start chrony
+else
+    if which ntpdate &>/dev/null; then
+        systemctl stop ntp || true
+
+        for (( i = 0; i < 5; i++ )); do
+            ntpdate -4 -b pool.ntp.org &>/dev/null && break
+        done
+    fi
+
+    systemctl start ntp
+fi
 
 for action in enable start; do
     systemctl "$action" cockroach 2> /dev/null
 done
 
 STATUS=0
-for retries in {1..30}; do
+for (( i = 0; i < 30; i++ )); do
     set +e
     curl -sk -L --connect-timeout 5 "http://${HOST}:8080/health" &>/dev/null
     STATUS=$?

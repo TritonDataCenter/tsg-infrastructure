@@ -31,7 +31,7 @@ else
         --recv-keys 1C61B9CD
 fi
 
-cat <<EOF > /etc/apt/preferences.d/haproxy-1.8
+cat <<EOF > /etc/apt/preferences.d/haproxy
 Package: *
 Pin: release o=LP-PPA-vbernat-haproxy-1.8
 Pin-Priority: 1001

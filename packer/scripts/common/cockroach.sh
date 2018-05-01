@@ -12,11 +12,13 @@ readonly COCKROACH_FILES='/var/tmp/cockroach'
 
 apt_get_update
 
-apt-get --assume-yes install ntpdate
+if ! which chronyc &>/dev/null; then
+    apt-get --assume-yes install \
+        ntpdate
+fi
 
-# The version 1.1.7 is currently the recommended stable version.
 if [[ -z $COCKROACH_VERSION ]]; then
-    COCKROACH_VERSION='1.1.7'
+    COCKROACH_VERSION='2.0.1'
 fi
 
 ARCHIVE_FILE="cockroach-v${COCKROACH_VERSION}.$(detect_os)-$(detect_platform).tgz"

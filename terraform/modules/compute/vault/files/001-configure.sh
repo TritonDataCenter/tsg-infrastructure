@@ -3,19 +3,6 @@
 set -e
 set -o pipefail
 
-detect_private_address() {
-    local address="$1"
-    shift
-
-    local status=0
-    set +e
-    [[ "$address" =~ (10\.|172\.[123]|192\.168\.) ]]
-    status=$?
-    set -e
-
-    return $status
-}
-
 export PATH='/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin'
 
 readonly VAULT_HOME='/mnt/vault'
@@ -27,19 +14,22 @@ if [[ ! -d $VAULT_HOME ]]; then
     exit 1
 fi
 
-IPS=($(hostname -I))
-
-PRIVATE_IP=
-for address in "${IPS[@]}"; do
-    if detect_private_address "$address"; then
-        PRIVATE_IP="$address"
-        break
-    fi
-done
+PRIVATE_IP=$(gomplate -i '{{ sockaddr.GetPrivateIP }}')
 
 sed -i -e \
     "s/PRIVATE_IP/${PRIVATE_IP}/g" \
     /etc/vault/config.hcl
+
+sed -i -e \
+    "s/PRIVATE_IP/${PRIVATE_IP}/g" \
+    /etc/consul-template/template.d/haproxy.cfg.ctmpl
+
+cat <<EOF > /etc/profile.d/vault.sh
+export VAULT_ADDR='https://${PRIVATE_IP}:8200'
+EOF
+
+chown root: /etc/profile.d/vault.sh
+chmod 644 /etc/profile.d/vault.sh
 
 mkdir -p "${VAULT_HOME}/.tls"
 

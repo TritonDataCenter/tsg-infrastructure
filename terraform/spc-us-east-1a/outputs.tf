@@ -6,10 +6,6 @@ output "bastion_private_cns" {
   value = "${module.bastion.private_cns_domain}"
 }
 
-output "consul_server_private_cns" {
-  value = "${module.consul.private_cns_domain}"
-}
-
 output "vault_private_cns" {
   value = "${module.vault.private_cns_domain}"
 }
@@ -20,6 +16,10 @@ output "vault_psk_key" {
 
 output "vault_manta_path" {
   value = "${module.vault.manta_path}"
+}
+
+output "consul_private_cns" {
+  value = "${module.consul.private_cns_domain}"
 }
 
 output "cockroach_private_cns" {

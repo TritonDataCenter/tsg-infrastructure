@@ -1,11 +1,12 @@
 TRITON_ACCOUNT ?=
 TRITON_KEY_ID ?=
 BASE_IMAGE_VERSION ?= 0.1.0
-CONSUL_VERSION ?= 1.0.7
+GOMPLATE_VERSION ?= 2.5.0
+CONSUL_VERSION ?= 1.1.0
 CONSUL_TEMPLATE_VERSION ?= 0.19.4
 CONSUL_CLI_VERSION ?= 0.3.1
 NOMAD_VERSION ?= 0.8.3
-COCKROACH_VERSION ?= 1.1.7
+COCKROACH_VERSION ?= 2.0.1
 FABIO_VERSION ?= 1.5.8
 LEVANT_VERSION ?= 0.1.1
 DEPLOYMENT_VERSION ?= 0.1.0
@@ -24,6 +25,7 @@ validate-base: ## Validate the Base template.
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
 		-var "version=$(BASE_IMAGE_VERSION)" \
+		-var "gomplate_version=$(GOMPLATE_VERSION)" \
 		base.json
 
 .PHONY: validate-consul-server
@@ -130,6 +132,7 @@ base: validate-base ## Build the Base template.
 		-var "triton_account=$(TRITON_ACCOUNT)" \
 		-var "triton_key_id=$(TRITON_KEY_ID)" \
 		-var "version=$(BASE_IMAGE_VERSION)" \
+		-var "gomplate_version=$(GOMPLATE_VERSION)" \
 		base.json
 
 .PHONY: consul-server

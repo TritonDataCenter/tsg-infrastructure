@@ -8,11 +8,11 @@ source /var/tmp/helpers/default.sh
 
 readonly CONSUL_FILES='/var/tmp/consul/server'
 
-cp -f "${CONSUL_FILES}/consul.json" \
-      /etc/consul/consul.json
+cp -f "${CONSUL_FILES}/config.json" \
+      /etc/consul/config.json
 
-chown root: /etc/consul/consul.json
-chmod 644 /etc/consul/consul.json
+chown root: /etc/consul/config.json
+chmod 644 /etc/consul/config.json
 
 cp -f "${CONSUL_FILES}/consul.service" \
       /lib/systemd/system/consul.service

@@ -18,6 +18,10 @@ variable "instance_count" {
   default = 3
 }
 
+variable "vault_cns_url" {
+  type = "string"
+}
+
 variable "consul_cns_url" {
   type = "string"
 }
@@ -27,7 +31,7 @@ variable "nomad_cns_url" {
 }
 
 variable "nomad_role" {
-  default = ""
+  default = "automater"
 }
 
 variable "root_authorized_keys" {

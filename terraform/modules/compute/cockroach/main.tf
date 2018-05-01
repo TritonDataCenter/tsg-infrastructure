@@ -14,7 +14,9 @@ data "template_file" "mod" {
 
   vars {
     data_center_name = "${data.triton_datacenter.mod.name}"
-    consul_cns_url   = "${var.consul_cns_url}"
+
+    vault_cns_url  = "${var.vault_cns_url}"
+    consul_cns_url = "${var.consul_cns_url}"
   }
 }
 
@@ -81,6 +83,10 @@ resource "random_shuffle" "mod" {
   ]
 
   result_count = 1
+
+  keepers = {
+    cockroach_instance_ids = "${join(",", triton_machine.mod.*.id)}"
+  }
 }
 
 resource "null_resource" "bootstrap" {
@@ -109,8 +115,8 @@ EOF
 
   provisioner "remote-exec" {
     scripts = [
-      "${format("%s/files/%s", path.module, "configure.sh")}",
-      "${format("%s/files/%s", path.module, "start.sh")}",
+      "${format("%s/files/%s", path.module, "001-configure.sh")}",
+      "${format("%s/files/%s", path.module, "002-start.sh")}",
     ]
   }
 }
@@ -138,7 +144,7 @@ EOF
 
   provisioner "remote-exec" {
     scripts = [
-      "${format("%s/files/%s", path.module, "initialize.sh")}",
+      "${format("%s/files/%s", path.module, "003-initialize.sh")}",
     ]
   }
 

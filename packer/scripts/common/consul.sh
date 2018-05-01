@@ -10,14 +10,16 @@ readonly CONSUL_FILES='/var/tmp/consul/common'
 
 [[ -d $CONSUL_FILES ]] || mkdir -p "$CONSUL_FILES"
 
-# The version 1.0.6 is currently the recommended stable version.
-if [[ -z $CONSUL_VERSION ]]; then
-    CONSUL_VERSION='1.0.6'
-fi
-
 apt_get_update
 
-apt-get --assume-yes install unzip
+if ! dpkg -s unzip &> /dev/null; then
+    apt-get --assume-yes install \
+        unzip
+fi
+
+if [[ -z $CONSUL_VERSION ]]; then
+    CONSUL_VERSION='1.1.0'
+fi
 
 ARCHIVE_FILE="consul_${CONSUL_VERSION}_$(detect_os)_$(detect_platform).zip"
 

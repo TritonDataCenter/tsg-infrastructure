@@ -18,19 +18,23 @@ variable "instance_count" {
   default = 3
 }
 
-variable "insecure" {
-  default = false
+variable "bastion_cns_url" {
+  type = "string"
+}
+
+variable "vault_cns_url" {
+  type = "string"
 }
 
 variable "consul_cns_url" {
   type = "string"
 }
 
-variable "root_authorized_keys" {
-  default = ""
+variable "insecure" {
+  default = false
 }
 
-variable "bastion_cns_url" {
+variable "root_authorized_keys" {
   default = ""
 }
 

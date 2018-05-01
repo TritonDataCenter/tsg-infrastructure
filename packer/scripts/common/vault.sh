@@ -10,16 +10,18 @@ readonly VAULT_FILES='/var/tmp/vault'
 
 [[ -d $VAULT_FILES ]] || mkdir -p "$VAULT_FILES"
 
-# The version 0.10.0 is currently the recommended stable version.
-if [[ -z $VAULT_VERSION ]]; then
-    VAULT_VERSION='0.10.0'
-fi
-
 apt_get_update
 
-apt-get --assume-yes install \
-    unzip \
-    jq
+PACKAGES=( 'unzip' 'jq' )
+for package in "${PACKAGES[@]}"; do
+    if ! dpkg -s "$package" &>/dev/null; then
+        apt-get --assume-yes install "$package"
+    fi
+done
+
+if [[ -z $VAULT_VERSION ]]; then
+    VAULT_VERSION='0.10.1'
+fi
 
 ARCHIVE_FILE="vault_${VAULT_VERSION}_$(detect_os)_$(detect_platform).zip"
 
@@ -61,11 +63,10 @@ chown vault:adm /var/log/vault
 chmod 2750 /var/log/vault
 
 cp -f "${VAULT_FILES}/config.hcl" \
-      "${VAULT_FILES}/config.hcl.tls" \
       /etc/vault
 
-chown root: /etc/vault/*.hcl
-chmod 644 /etc/vault/*.hcl
+chown root: /etc/vault/config.hcl
+chmod 644 /etc/vault/config.hcl
 
 cp -f "${VAULT_FILES}/vault.default" \
       /etc/default/vault

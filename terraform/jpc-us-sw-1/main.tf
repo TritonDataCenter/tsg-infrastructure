@@ -2,7 +2,7 @@ provider "triton" {}
 
 terraform {
   backend "manta" {
-    path = "us-sw-1/tsg"
+    path = "tsg/terraform/jpc/us-sw-1"
   }
 }
 
@@ -12,9 +12,21 @@ data "triton_image" "bastion" {
   most_recent = true
 }
 
+data "triton_image" "vault" {
+  name        = "${var.tsg_vault_image_name}"
+  version     = "${var.tsg_vault_image_version}"
+  most_recent = true
+}
+
 data "triton_image" "consul" {
   name        = "${var.tsg_consul_image_name}"
   version     = "${var.tsg_consul_image_version}"
+  most_recent = true
+}
+
+data "triton_image" "cockroach" {
+  name        = "${var.tsg_cockroach_image_name}"
+  version     = "${var.tsg_cockroach_image_version}"
   most_recent = true
 }
 
@@ -30,9 +42,9 @@ data "triton_image" "nomad_client" {
   most_recent = true
 }
 
-data "triton_image" "cockroach" {
-  name        = "${var.tsg_cockroach_image_name}"
-  version     = "${var.tsg_cockroach_image_version}"
+data "triton_image" "api_server" {
+  name        = "${var.tsg_api_server_image_name}"
+  version     = "${var.tsg_api_server_image_version}"
   most_recent = true
 }
 
@@ -42,21 +54,9 @@ data "triton_image" "fabio" {
   most_recent = true
 }
 
-data "triton_image" "api_server" {
-  name        = "${var.tsg_api_server_image_name}"
-  version     = "${var.tsg_api_server_image_version}"
-  most_recent = true
-}
-
 data "triton_image" "deployment" {
   name        = "${var.tsg_deployment_image_name}"
   version     = "${var.tsg_deployment_image_version}"
-  most_recent = true
-}
-
-data "triton_image" "vault" {
-  name        = "${var.tsg_vault_image_name}"
-  version     = "${var.tsg_vault_image_version}"
   most_recent = true
 }
 
@@ -100,11 +100,11 @@ module "bastion" {
   instance_count = 2
 
   instance_name_prefix = "${var.instance_name_prefix}"
-  image                = "${data.triton_image.bastion.id}"
-  package              = "${var.package}"
-
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
   public_cns_fragment  = "${module.cns_fragments.public_dns_fragment}"
+
+  image   = "${data.triton_image.bastion.id}"
+  package = "${var.package}"
 
   firewall_enabled = "${var.firewall_enabled}"
 
@@ -118,10 +118,52 @@ module "bastion" {
   ]
 
   firewall_targets_list = [
-    "all vms",
     "any",
     "${formatlist("ip %s", var.allowed_ips)}",
     "${formatlist("subnet %s", var.allowed_cidr_blocks)}",
+  ]
+}
+
+module "vault_hostname_cloud_config" {
+  source = "../modules/common/hostname"
+
+  instance_count = 3
+
+  instance_name_prefix = "${var.instance_name_prefix}"
+  instance_type        = "vault"
+}
+
+module "vault" {
+  source = "../modules/compute/vault"
+
+  cloud = "${var.cloud}"
+
+  instance_count = 3
+
+  instance_name_prefix = "${var.instance_name_prefix}"
+  private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
+
+  package = "${var.package}"
+  image   = "${data.triton_image.vault.id}"
+
+  bastion_cns_url = "${module.bastion.public_cns_domain}"
+
+  firewall_enabled = "${var.firewall_enabled}"
+
+  cloud_init_config = [
+    "${module.vault_hostname_cloud_config.rendered}",
+  ]
+
+  networks = [
+    "${module.networking.private_network_id}",
+  ]
+
+  firewall_targets_list = [
+    "${format("tag \"triton.cns.services\" = \"%s\"", module.bastion.cns_service_tag)}",
+  ]
+
+  depends_on = [
+    "${module.bastion.ips}",
   ]
 }
 
@@ -140,10 +182,13 @@ module "consul" {
   instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
-  package              = "${var.package}"
-  image                = "${data.triton_image.consul.id}"
-
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
+
+  package = "${var.package}"
+  image   = "${data.triton_image.consul.id}"
+
+  bastion_cns_url = "${module.bastion.public_cns_domain}"
+  vault_cns_url   = "${module.vault.private_cns_domain}"
 
   cloud_init_config = [
     "${module.consul_hostname_cloud_config.rendered}",
@@ -152,47 +197,10 @@ module "consul" {
   networks = [
     "${module.networking.private_network_id}",
   ]
-}
-
-module "vault_hostname_cloud_config" {
-  source = "../modules/common/hostname"
-
-  instance_count = 3
-
-  instance_name_prefix = "${var.instance_name_prefix}"
-  instance_type        = "vault"
-}
-
-module "vault" {
-  source = "../modules/compute/vault"
-
-  instance_count = 3
-
-  instance_name_prefix = "${var.instance_name_prefix}"
-  package              = "${var.package}"
-  image                = "${data.triton_image.vault.id}"
-
-  private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
-
-  consul_cns_url  = "${module.consul.private_cns_domain}"
-  bastion_cns_url = "${module.bastion.public_cns_domain}"
-
-  firewall_enabled = "${var.firewall_enabled}"
-
-  cloud_init_config = [
-    "${module.vault_hostname_cloud_config.rendered}",
-  ]
-
-  networks = [
-    "${module.networking.private_network_id}",
-  ]
-
-  firewall_targets_list = [
-    "${format("tag \"triton.cns.services\" = \"%s\"", module.bastion.cns_service_tag)}",
-  ]
 
   depends_on = [
-    "${module.consul.ips}",
+    "${module.vault.ips}",
+    "${module.vault.provisioner}",
   ]
 }
 
@@ -210,16 +218,17 @@ module "cockroach" {
 
   instance_count = 3
 
+  private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
   instance_name_prefix = "${var.instance_name_prefix}"
-  image                = "${data.triton_image.cockroach.id}"
-  package              = "${var.package}"
+
+  image   = "${data.triton_image.cockroach.id}"
+  package = "${var.package}"
+
+  bastion_cns_url = "${module.bastion.public_cns_domain}"
+  vault_cns_url   = "${module.vault.private_cns_domain}"
+  consul_cns_url  = "${module.consul.private_cns_domain}"
 
   insecure = true
-
-  private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
-
-  consul_cns_url  = "${module.consul.private_cns_domain}"
-  bastion_cns_url = "${module.bastion.public_cns_domain}"
 
   cloud_init_config = [
     "${module.cockroach_hostname_cloud_config.rendered}",
@@ -249,11 +258,12 @@ module "nomad_server" {
   instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
-  package              = "${var.package}"
-  image                = "${data.triton_image.nomad_server.id}"
-
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
 
+  package = "${var.package}"
+  image   = "${data.triton_image.nomad_server.id}"
+
+  vault_cns_url  = "${module.vault.private_cns_domain}"
   consul_cns_url = "${module.consul.private_cns_domain}"
 
   cloud_init_config = [
@@ -284,15 +294,14 @@ module "nomad_client" {
   instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
-  package              = "${var.package}"
-  image                = "${data.triton_image.nomad_client.id}"
-
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
 
+  package = "${var.package}"
+  image   = "${data.triton_image.nomad_client.id}"
+
+  vault_cns_url  = "${module.vault.private_cns_domain}"
   consul_cns_url = "${module.consul.private_cns_domain}"
   nomad_cns_url  = "${module.nomad_server.private_cns_domain}"
-
-  nomad_role = "automater"
 
   cloud_init_config = [
     "${module.nomad_client_hostname_cloud_config.rendered}",
@@ -322,15 +331,14 @@ module "api_server" {
   instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
-  image                = "${data.triton_image.api_server.id}"
-  package              = "${var.package}"
-
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
 
+  image   = "${data.triton_image.api_server.id}"
+  package = "${var.package}"
+
+  vault_cns_url  = "${module.vault.private_cns_domain}"
   consul_cns_url = "${module.consul.private_cns_domain}"
   nomad_cns_url  = "${module.nomad_server.private_cns_domain}"
-
-  nomad_role = "api-server"
 
   cloud_init_config = [
     "${module.api_servers_hostname_cloud_config.rendered}",
@@ -362,17 +370,18 @@ module "fabio" {
   instance_count = 3
 
   instance_name_prefix = "${var.instance_name_prefix}"
-  image                = "${data.triton_image.fabio.id}"
-  package              = "${var.package}"
-
   public_cns_fragment  = "${module.cns_fragments.public_dns_fragment}"
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
 
+  image   = "${data.triton_image.fabio.id}"
+  package = "${var.package}"
+
+  bastion_cns_url = "${module.bastion.public_cns_domain}"
+  vault_cns_url   = "${module.vault.private_cns_domain}"
+  consul_cns_url  = "${module.consul.private_cns_domain}"
+
   cloudflare_domain = "${module.dns_helper.domain_name}"
   cloudflare_name   = "${module.dns_helper.fqdn}"
-
-  consul_cns_url  = "${module.consul.private_cns_domain}"
-  bastion_cns_url = "${module.bastion.public_cns_domain}"
 
   firewall_enabled = "${var.firewall_enabled}"
 
@@ -409,20 +418,17 @@ module "deployment" {
   instance_count = 1
 
   instance_name_prefix = "${var.instance_name_prefix}"
-  image                = "${data.triton_image.deployment.id}"
-  package              = "${var.package}"
-
   private_cns_fragment = "${module.cns_fragments.private_dns_fragment}"
 
-  consul_cns_url = "${module.consul.private_cns_domain}"
+  image   = "${data.triton_image.deployment.id}"
+  package = "${var.package}"
 
-  vault_cns_url = "${module.vault.private_cns_domain}"
+  vault_cns_url     = "${module.vault.private_cns_domain}"
+  consul_cns_url    = "${module.consul.private_cns_domain}"
+  cockroach_cns_url = "${module.cockroach.private_cns_domain}"
+  nomad_cns_url     = "${module.nomad_server.private_cns_domain}"
 
-  cockroach_cns_url  = "${module.cockroach.private_cns_domain}"
   cockroach_insecure = "${module.cockroach.insecure}"
-
-  nomad_cns_url = "${module.nomad_server.private_cns_domain}"
-  nomad_role    = "deployment"
 
   cloud_init_config = [
     "${module.deployment_hostname_cloud_config.rendered}",

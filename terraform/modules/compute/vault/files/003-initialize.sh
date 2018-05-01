@@ -5,7 +5,7 @@ set -o pipefail
 
 extract_initialization_status() {
     local file="$1"
-    shift
+    [[ $# ]] || shift
 
     initialized=
     set -e
@@ -33,7 +33,7 @@ if [[ -z $PSK_KEY ]]; then
     exit 1
 fi
 
-FILES=( MANTA_FILE VAULT_FILE )
+FILES=( 'MANTA_FILE' 'VAULT_FILE' )
 for file in "${FILES[@]}"; do
     FILE=${!file}
 
@@ -48,7 +48,7 @@ done
 trap 'rm -f $MANTA_FILE $VAULT_FILE' EXIT
 
 STATUS=0
-for retries in {1..30}; do
+for (( i = 0; i < 30; i++ )); do
     set +e
     curl -sk -L --connect-timeout 5 "http://127.0.0.1:8200/v1/sys/health" &>/dev/null
     STATUS=$?
@@ -63,7 +63,7 @@ VAULT_INITIALIZED=$(curl -sk -L \
     'http://127.0.0.1:8200/v1/sys/init' | \
         extract_initialization_status)
 
-if [[ $VAULT_INITIALIZED == "true" ]]; then
+if [[ $VAULT_INITIALIZED == 'true' ]]; then
     echo 'Vault cluster already initialized, nothing to do.'
     exit 0
 fi

@@ -10,9 +10,7 @@ WorkingDirectory=/
 ExecStart=/bin/bash -c \
 	"exec /usr/local/bin/consul agent \
 		-ui \
-		-bind '{{ GetPrivateIP }}' \
-		-client '{{ GetPrivateIP }}' \
-		-config-file /etc/consul/consul.json \
+		-config-file /etc/consul/config.json \
 		-config-dir /etc/consul/conf.d \
 		$ADDITIONAL_ARGS \
 		&>>${LOG_DIRECTORY}/consul.log"

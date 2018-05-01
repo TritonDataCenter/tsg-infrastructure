@@ -10,14 +10,16 @@ readonly CONSUL_TEMPLATE_FILES='/var/tmp/consul-template/common'
 
 [[ -d $CONSUL_TEMPLATE_FILES ]] || mkdir -p "$CONSUL_TEMPLATE_FILES"
 
-# The version 0.19.4 is currently the recommended stable version.
+apt_get_update
+
+if ! dpkg -s unzip &>/dev/null; then
+    apt-get --assume-yes install \
+        unzip
+fi
+
 if [[ -z $CONSUL_TEMPLATE_VERSION ]]; then
     CONSUL_TEMPLATE_VERSION='0.19.4'
 fi
-
-apt_get_update
-
-apt-get --assume-yes install unzip
 
 ARCHIVE_FILE="consul-template_${CONSUL_TEMPLATE_VERSION}_$(detect_os)_$(detect_platform).zip"
 
@@ -36,15 +38,18 @@ chmod 755 /usr/local/bin/consul-template
 mkdir -p /etc/consul-template \
          /etc/consul-template/conf.d \
          /etc/consul-template/template.d \
+         /etc/consul-template/plugin.d \
          /var/log/consul-template
 
 chown root: /etc/consul-template \
             /etc/consul-template/conf.d \
-            /etc/consul-template/template.d
+            /etc/consul-template/template.d \
+            /etc/consul-template/plugin.d
 
 chmod 755 /etc/consul-template \
           /etc/consul-template/conf.d \
-          /etc/consul-template/template.d
+          /etc/consul-template/template.d \
+          /etc/consul-template/plugin.d
 
 chown root:adm /var/log/consul-template
 chmod 2750 /var/log/consul-template

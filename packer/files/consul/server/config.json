@@ -1,5 +1,7 @@
 {
   "server": true,
+  "bind_addr": "{{ GetPrivateIP }}",
+  "client_addr": "{{ GetPrivateIP }}",
   "bootstrap_expect": 3,
   "datacenter": "DATACENTER_NAME",
   "data_dir": "/mnt/consul",

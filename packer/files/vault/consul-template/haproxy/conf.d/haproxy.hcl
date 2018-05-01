@@ -6,7 +6,7 @@ template {
   perms       = 0644
   backup      = false
 
-  command = "systemctl restart haproxy || true"
+  command = "systemctl reload-or-restart haproxy || true"
 
   command_timeout = "30s"
 }

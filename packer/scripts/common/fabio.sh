@@ -10,7 +10,8 @@ readonly FABIO_FILES='/var/tmp/fabio'
 
 [[ -d $FABIO_FILES ]] || mkdir -p "$FABIO_FILES"
 
-# The version 1.5.8 is currently the recommended stable version.
+apt_get_update
+
 if [[ -z $FABIO_VERSION ]]; then
     FABIO_VERSION='1.5.8'
 fi

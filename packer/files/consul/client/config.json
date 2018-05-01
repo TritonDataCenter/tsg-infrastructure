@@ -1,5 +1,6 @@
 {
   "server": false,
+  "bind_addr": "{{ GetPrivateIP }}",
   "datacenter": "DATACENTER_NAME",
   "data_dir": "/mnt/consul",
   "encrypt": "Bm4qFPeEKR+0XvWKA5/d7Q==",

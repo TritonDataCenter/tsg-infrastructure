@@ -8,17 +8,17 @@ source /var/tmp/helpers/default.sh
 
 # A list of common packages to be installed.
 PACKAGES=(
-    'ntp'
-    'wget'
-    'curl'
-    'vim'
+    'apt-transport-https'
+    'python-software-properties'
+    'software-properties-common'
+    'chrony'
     'haveged'
-    'iptables'
     'irqbalance'
     'heirloom-mailx'
-    'software-properties-common'
-    'python-software-properties'
-    'apt-transport-https'
+    'sysstat'
+    'curl'
+    'wget'
+    'vim'
 )
 
 apt_get_update
@@ -27,31 +27,43 @@ for package in "${PACKAGES[@]}"; do
     apt-get --assume-yes install "$package"
 done
 
-systemctl stop ntp || true
+systemctl stop chrony || true
 
-# Force IPv4 only, and enable slew mode to handle the clock
-# moving backwards in one large increment, for example in a
-# case of a leap-second, etc.
-sed -i -e \
-    "s/.*NTPD_OPTS='\(.*\)'/NTPD_OPTS='-x \1 -4'/g" \
-    /etc/default/ntp
+cat <<'EOF' > /etc/chrony/chrony.conf
+pool 0.pool.ntp.org iburst offline
+pool 1.pool.ntp.org iburst offline
+pool 2.pool.ntp.org iburst offline
+pool 3.pool.ntp.org iburst offline
 
-# Makes time sync more aggressively in a VM. See
-# http://kb.vmware.com/kb/1006427 for more details.
-sed -i -e \
-    '/.*restrict -6.*$/d;/.*restrict ::1$/d;1a\\ntinker panic 0' \
-    /etc/ntp.conf
+keyfile /etc/chrony/chrony.keys
 
-# Disable the monitoring facility to prevent attacks using ntpdc monlist
-# command when default restrict does not include the noquery flag. See
-# https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-5211 for more
-# details.
-sed -i -e \
-    '/tinker panic.*/a disable monitor' \
-    /etc/ntp.conf
+commandkey 1
+
+driftfile /var/lib/chrony/chrony.drift
+
+log tracking measurements statistics
+logdir /var/log/chrony
+
+maxupdateskew 100.0
+makestep 1.0 3
+
+dumponexit
+
+dumpdir /var/lib/chrony
+
+logchange 0.5
+
+hwclockfile /etc/adjtime
+
+rtcsync
+EOF
+
+chown root: /etc/chrony/chrony.conf
+chmod 644 /etc/chrony/chrony.conf
+chmod 600 /etc/chrony/chrony.keys
 
 sed -i -e \
-    '/server.*\.ubuntu\.pool\.ntp\.org/ s/ubuntu\.\(.*\)/\1 iburst/' \
-    /etc/ntp.conf
+    's/.*ENABLED="false"/ENABLED="true"/' \
+    /etc/default/sysstat
 
 update-alternatives --set editor /usr/bin/vim.basic

@@ -10,14 +10,16 @@ readonly NOMAD_FILES='/var/tmp/nomad/common'
 
 [[ -d $NOMAD_FILES ]] || mkdir -p "$NOMAD_FILES"
 
-# The version 0.7.1 is currently the recommended stable version.
-if [[ -z $NOMAD_VERSION ]]; then
-    NOMAD_VERSION='0.7.1'
-fi
-
 apt_get_update
 
-apt-get --assume-yes install unzip
+if ! dpkg -s unzip &>/dev/null; then
+    apt-get --assume-yes install \
+        unzip
+fi
+
+if [[ -z $NOMAD_VERSION ]]; then
+    NOMAD_VERSION='0.8.3'
+fi
 
 ARCHIVE_FILE="nomad_${NOMAD_VERSION}_$(detect_os)_$(detect_platform).zip"
 

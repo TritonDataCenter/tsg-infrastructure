@@ -22,7 +22,7 @@ variable "instance_count" {
   default = 3
 }
 
-variable "consul_cns_url" {
+variable "bastion_cns_url" {
   type = "string"
 }
 
@@ -43,10 +43,6 @@ variable "psk_key_length" {
 }
 
 variable "root_authorized_keys" {
-  default = ""
-}
-
-variable "bastion_cns_url" {
   default = ""
 }
 

@@ -10,17 +10,16 @@ readonly LEVANT_FILES='/var/tmp/levant/common'
 
 [[ -d $LEVANT_FILES ]] || mkdir -p "$LEVANT_FILES"
 
-# The version 0.1.0 is currently the recommended stable version.
-if [[ -z $LEVANT_VERSION ]]; then
-    LEVANT_VERSION='0.1.0'
-fi
-
 apt_get_update
 
-apt-get --assume-yes install unzip
+if [[ -z $LEVANT_VERSION ]]; then
+    LEVANT_VERSION='0.1.1'
+fi
+
+BINARY_FILE="linux-$(detect_platform)-levant"
 
 wget -O "${LEVANT_FILES}/levant" \
-    "https://github.com/jrasell/levant/releases/download/${LEVANT_VERSION}/linux-$(detect_platform)-levant"
+    "https://github.com/jrasell/levant/releases/download/${LEVANT_VERSION}/${BINARY_FILE}"
 
 cp -f "${LEVANT_FILES}/levant" \
       /usr/local/bin/levant

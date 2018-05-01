@@ -90,7 +90,8 @@
       "expect_disconnect": "true",
       "scripts": [
         "scripts/common/consul.sh",
-        "scripts/consul/client/consul.sh",
+        "scripts/consul/server/consul.sh",
+        "scripts/vault/consul.sh",
         "scripts/common/consul-template.sh",
         "scripts/vault/consul-template.sh",
         "scripts/common/vault.sh",

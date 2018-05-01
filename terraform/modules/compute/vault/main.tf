@@ -2,9 +2,12 @@ locals {
   private_cns_domain = "${format("%s.%s", var.cns_service_tag,
                           var.private_cns_fragment)}"
 
-  manta_path = "${format("/%s/stor/vault/%s/%s",
-                  data.triton_account.mod.login, var.cloud,
-                  data.triton_datacenter.mod.name)}"
+  manta_path = "${format("/%s/stor/tsg/%s/%s/%s",
+                  data.triton_account.mod.login, var.cns_service_tag,
+                  var.cloud, data.triton_datacenter.mod.name)}"
+
+  cluster_name = "${coalesce(var.cluster_name, format("%s-vault-cluster",
+                    var.instance_name_prefix))}"
 }
 
 data "triton_account" "mod" {}
@@ -18,10 +21,8 @@ data "template_file" "mod" {
 
   vars {
     data_center_name = "${data.triton_datacenter.mod.name}"
-    consul_cns_url   = "${var.consul_cns_url}"
-
-    cluster_name = "${coalesce(var.cluster_name, format("%s-vault-cluster",
-                      var.instance_name_prefix))}"
+    cluster_name     = "${local.cluster_name}"
+    consul_cns_url   = "${local.private_cns_domain}"
   }
 }
 
@@ -116,6 +117,10 @@ resource "random_shuffle" "mod" {
   ]
 
   result_count = 1
+
+  keepers = {
+    vault_instance_ids = "${join(",", triton_machine.mod.*.id)}"
+  }
 }
 
 resource "null_resource" "bootstrap" {
@@ -135,8 +140,8 @@ resource "null_resource" "bootstrap" {
 
   provisioner "remote-exec" {
     scripts = [
-      "${format("%s/files/%s", path.module, "configure.sh")}",
-      "${format("%s/files/%s", path.module, "start.sh")}",
+      "${format("%s/files/%s", path.module, "001-configure.sh")}",
+      "${format("%s/files/%s", path.module, "002-start.sh")}",
     ]
   }
 }
@@ -175,7 +180,7 @@ EOF
   }
 
   provisioner "file" {
-    source      = "${format("%s/files/%s", path.module, "initialize.sh")}"
+    source      = "${format("%s/files/%s", path.module, "003-initialize.sh")}"
     destination = "/var/tmp/initialize.sh"
   }
 
@@ -219,7 +224,7 @@ EOF
   }
 
   provisioner "file" {
-    source      = "${format("%s/files/%s", path.module, "unseal.sh")}"
+    source      = "${format("%s/files/%s", path.module, "004-unseal.sh")}"
     destination = "/var/tmp/unseal.sh"
   }
 
@@ -236,6 +241,118 @@ EOF
   ]
 }
 
+resource "null_resource" "certificate_authority" {
+  triggers {
+    vault_instance_ids = "${join(",", triton_machine.mod.*.id)}"
+  }
+
+  connection {
+    type         = "ssh"
+    user         = "ubuntu"
+    host         = "${element(random_shuffle.mod.result, 0)}"
+    bastion_host = "${var.bastion_cns_url}"
+    timeout      = "180s"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+export MANTA_URL='${coalesce(module.manta_url.value, module.manta_helper.manta_url)}'
+export MANTA_USER='${module.triton_account.value}'
+export MANTA_KEY_ID='${module.triton_key_id.value}'
+export MANTA_PATH='${local.manta_path}'
+EOF
+
+    destination = "/var/tmp/.manta"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+export VAULT_CNS_URL='${local.private_cns_domain}'
+EOF
+
+    destination = "/var/tmp/.vault"
+  }
+
+  provisioner "file" {
+    source      = "${format("%s/files/%s", path.module, "005-certificate-authority.sh")}"
+    destination = "/var/tmp/certificate-authority.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod 755 /var/tmp/certificate-authority.sh",
+      "${format("PSK_KEY='%s' /var/tmp/certificate-authority.sh", random_string.mod.result)}",
+      "rm -f /var/tmp/certificate-authority.sh",
+    ]
+  }
+
+  depends_on = [
+    "null_resource.unseal",
+  ]
+}
+
+resource "null_resource" "enable_encryption" {
+  count = "${var.instance_count}"
+
+  triggers {
+    vault_instance_ids = "${join(",", triton_machine.mod.*.id)}"
+  }
+
+  connection {
+    type         = "ssh"
+    user         = "ubuntu"
+    host         = "${element(triton_machine.mod.*.primaryip, count.index)}"
+    bastion_host = "${var.bastion_cns_url}"
+    timeout      = "180s"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+export MANTA_URL='${coalesce(module.manta_url.value, module.manta_helper.manta_url)}'
+export MANTA_USER='${module.triton_account.value}'
+export MANTA_KEY_ID='${module.triton_key_id.value}'
+export MANTA_PATH='${local.manta_path}'
+EOF
+
+    destination = "/var/tmp/.manta"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+export VAULT_CNS_URL='${local.private_cns_domain}'
+EOF
+
+    destination = "/var/tmp/.vault"
+  }
+
+  provisioner "file" {
+    source      = "${format("%s/files/%s", path.module, "006-enable-encryption.sh")}"
+    destination = "/var/tmp/enable-encryption.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod 755 /var/tmp/enable-encryption.sh",
+      "${format("PSK_KEY='%s' /var/tmp/enable-encryption.sh", random_string.mod.result)}",
+      "rm -f /var/tmp/enable-encryption.sh",
+    ]
+  }
+
+  depends_on = [
+    "null_resource.certificate_authority",
+  ]
+}
+
+resource "null_resource" "provisioner" {
+  depends_on = [
+    "null_resource.bootstrap",
+    "null_resource.initialize",
+    "null_resource.unseal",
+    "null_resource.certificate_authority",
+    "null_resource.enable_encryption",
+  ]
+}
+
 resource "triton_firewall_rule" "firewall_allow_ingress_ssh" {
   count = "${var.firewall_enabled ? length(var.firewall_targets_list) : 0}"
 
@@ -247,6 +364,38 @@ resource "triton_firewall_rule" "firewall_allow_ingress_ssh" {
 
   rule = "${format("FROM %s TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 22",
             element(var.firewall_targets_list, count.index), var.cns_service_tag)}"
+
+  depends_on = [
+    "triton_machine.mod",
+  ]
+}
+
+resource "triton_firewall_rule" "firewall_allow_ingress_http" {
+  count = "${var.firewall_enabled ? 1 : 0}"
+
+  enabled = true
+
+  description = "${format("Allow HTTP to Vault - %s",
+                   var.instance_name_prefix)}"
+
+  rule = "${format("FROM any TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 80",
+            var.cns_service_tag)}"
+
+  depends_on = [
+    "triton_machine.mod",
+  ]
+}
+
+resource "triton_firewall_rule" "firewall_allow_ingress_https" {
+  count = "${var.firewall_enabled ? 1 : 0}"
+
+  enabled = true
+
+  description = "${format("Allow HTTPS to Vault - %s",
+                   var.instance_name_prefix)}"
+
+  rule = "${format("FROM any TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 443",
+            var.cns_service_tag)}"
 
   depends_on = [
     "triton_machine.mod",
@@ -306,11 +455,11 @@ resource "triton_firewall_rule" "firewall_allow_ingress_8301" {
 
   enabled = true
 
-  description = "${format("Allow TCP/8301 to Vault - %s",
+  description = "${format("Allow TCP/8201 to Vault nodes only - %s",
                    var.instance_name_prefix)}"
 
-  rule = "${format("FROM any TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 8301",
-            var.cns_service_tag)}"
+  rule = "${format("FROM tag \"triton.cns.services\" = \"%s\" TO tag \"triton.cns.services\" = \"%s\" ALLOW tcp PORT 8201",
+            var.cns_service_tag, var.cns_service_tag)}"
 
   depends_on = [
     "triton_machine.mod",

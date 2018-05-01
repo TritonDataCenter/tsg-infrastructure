@@ -5,7 +5,7 @@ set -o pipefail
 
 extract_seal_status() {
     local file="$1"
-    shift
+    [[ $# ]] || shift
 
     sealed=
     set -e
@@ -21,27 +21,9 @@ extract_seal_status() {
     echo "$sealed"
 }
 
-extract_root_token() {
-    local file="$1"
-    shift
-
-    token=
-    set -e
-    {
-        if [[ ! -t 0 ]]; then
-            token=$(jq -r '.root_token')
-        else
-            token=$(jq -r '.root_token' "$file")
-        fi
-    } 2>/dev/null || true
-    set +e
-
-    echo "$token"
-}
-
 extract_unseal_keys() {
     local file="$1"
-    shift
+    [[ $# ]] || shift
 
     keys=
     set -e
@@ -81,7 +63,7 @@ VAULT_SEALED=$(curl -sk -L \
     'http://127.0.0.1:8200/v1/sys/health' | \
         extract_seal_status)
 
-if [[ $VAULT_SEALED == "false" ]]; then
+if [[ $VAULT_SEALED == 'false' ]]; then
     echo 'Vault already unsealed, nothing to do.'
     exit 0
 fi
@@ -92,14 +74,14 @@ UNSEAL_KEYS=($(
             extract_unseal_keys
 ))
 
-for retries in {1..30}; do
+for (( i = 0; i < 30; i++ )); do
     KEY="${UNSEAL_KEYS[$(( RANDOM % ${#UNSEAL_KEYS[@]} ))]}"
 
     VAULT_SEALED=$(curl -sk -L \
         'http://127.0.0.1:8200/v1/sys/health' | \
             extract_seal_status)
 
-    [[ $VAULT_SEALED == "false" ]] && break
+    [[ $VAULT_SEALED == 'false' ]] && break
 
     curl -sk -L -X POST \
         -d "{ \"key\": \"${KEY}\" }" \

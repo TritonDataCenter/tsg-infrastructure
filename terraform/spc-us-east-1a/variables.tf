@@ -19,7 +19,7 @@ variable "tsg_consul_image_name" {
 }
 
 variable "tsg_consul_image_version" {
-  default = "1.0.6"
+  default = "1.1.0"
 }
 
 variable "tsg_nomad_server_image_name" {
@@ -27,7 +27,7 @@ variable "tsg_nomad_server_image_name" {
 }
 
 variable "tsg_nomad_server_image_version" {
-  default = "0.7.1"
+  default = "0.8.3"
 }
 
 variable "tsg_nomad_client_image_name" {
@@ -35,7 +35,7 @@ variable "tsg_nomad_client_image_name" {
 }
 
 variable "tsg_nomad_client_image_version" {
-  default = "0.7.1"
+  default = "0.8.3"
 }
 
 variable "tsg_cockroach_image_name" {
@@ -43,7 +43,7 @@ variable "tsg_cockroach_image_name" {
 }
 
 variable "tsg_cockroach_image_version" {
-  default = "1.1.7"
+  default = "2.0.1"
 }
 
 variable "tsg_fabio_image_name" {
@@ -75,7 +75,7 @@ variable "tsg_vault_image_name" {
 }
 
 variable "tsg_vault_image_version" {
-  default = "0.10.0"
+  default = "0.10.1"
 }
 
 variable "package" {

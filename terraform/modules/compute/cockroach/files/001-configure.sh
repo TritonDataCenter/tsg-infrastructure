@@ -51,15 +51,7 @@ done
 ADDITIONAL_ARGUMENTS+="--cache 25% --max-sql-memory 25% "
 ADDITIONAL_ARGUMENTS+="--join '$(join ',' "${CLUSTER_NODES[@]}")'"
 
-IPS=($(hostname -I))
-
-IP_ADDRESS=
-for address in "${IPS[@]}"; do
-    if detect_private_address "$address"; then
-        IP_ADDRESS="$address"
-        break
-    fi
-done
+PRIVATE_IP=$(gomplate -i '{{ sockaddr.GetPrivateIP }}')
 
 if [[ $INSECURE == 'true' ]]; then
     sed -i -e \
@@ -68,7 +60,7 @@ if [[ $INSECURE == 'true' ]]; then
 fi
 
 sed -i -e \
-    "s/.*HOST=.*/HOST=\"${IP_ADDRESS}\"/" \
+    "s/.*HOST=.*/HOST=\"${PRIVATE_IP}\"/" \
     /etc/default/cockroach
 
 sed -i -e \

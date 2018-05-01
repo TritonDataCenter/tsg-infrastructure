@@ -12,7 +12,9 @@ data "template_file" "mod" {
 
   vars {
     data_center_name = "${data.triton_datacenter.mod.name}"
-    consul_cns_url   = "${local.private_cns_domain}"
+
+    vault_cns_url  = "${var.vault_cns_url}"
+    consul_cns_url = "${local.private_cns_domain}"
   }
 }
 
@@ -69,6 +71,28 @@ resource "triton_machine" "mod" {
     ignore_changes = [
       "image",
       "tags",
+    ]
+  }
+}
+
+resource "null_resource" "bootstrap" {
+  count = "${var.instance_count}"
+
+  triggers {
+    fabio_instance_ids = "${join(",", triton_machine.mod.*.id)}"
+  }
+
+  connection {
+    type         = "ssh"
+    user         = "ubuntu"
+    host         = "${element(triton_machine.mod.*.primaryip, count.index)}"
+    bastion_host = "${var.bastion_cns_url}"
+    timeout      = "180s"
+  }
+
+  provisioner "remote-exec" {
+    scripts = [
+      "${format("%s/files/%s", path.module, "001-configure.sh")}",
     ]
   }
 }

@@ -8,7 +8,10 @@ source /var/tmp/helpers/default.sh
 
 apt_get_update
 
-apt-get install --assume-yes make
+if ! dpkg -s make &> /dev/null; then
+    apt-get --assume-yes install \
+        make
+fi
 
 npm install \
     --no-progress \

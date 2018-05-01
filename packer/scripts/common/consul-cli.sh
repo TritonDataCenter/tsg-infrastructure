@@ -10,7 +10,8 @@ readonly CONSUL_CLI_FILES='/var/tmp/consul-cli'
 
 [[ -d $CONSUL_CLI_FILES ]] || mkdir -p "$CONSUL_CLI_FILES"
 
-# The version 0.3.1 is currently the recommended stable version.
+apt_get_update
+
 if [[ -z $CONSUL_CLI_VERSION ]]; then
     CONSUL_CLI_VERSION='0.3.1'
 fi

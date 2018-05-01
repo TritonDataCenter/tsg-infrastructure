@@ -38,15 +38,19 @@ variable "instance_count" {
   default = 2
 }
 
+variable "bastion_cns_url" {
+  type = "string"
+}
+
+variable "vault_cns_url" {
+  type = "string"
+}
+
 variable "consul_cns_url" {
   type = "string"
 }
 
 variable "root_authorized_keys" {
-  default = ""
-}
-
-variable "bastion_cns_url" {
   default = ""
 }
 

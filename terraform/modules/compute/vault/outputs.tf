@@ -32,13 +32,8 @@ output "primaryip" {
   ]
 }
 
-output "consul_cns_url" {
-  value = "${var.consul_cns_url}"
-}
-
 output "cluster_name" {
-  value = "${coalesce(var.cluster_name, format("%s-vault-cluster",
-             var.instance_name_prefix))}"
+  value = "${local.cluster_name}"
 }
 
 output "secret_shares" {
@@ -59,4 +54,8 @@ output "manta_path" {
 
 output "private_cns_domain" {
   value = "${local.private_cns_domain}"
+}
+
+output "provisioner" {
+  value = "${null_resource.provisioner.id}"
 }

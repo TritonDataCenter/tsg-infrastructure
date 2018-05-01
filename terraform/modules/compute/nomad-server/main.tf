@@ -12,7 +12,9 @@ data "template_file" "mod" {
 
   vars {
     data_center_name = "${data.triton_datacenter.mod.name}"
-    consul_cns_url   = "${var.consul_cns_url}"
+
+    vault_cns_url  = "${var.vault_cns_url}"
+    consul_cns_url = "${var.consul_cns_url}"
   }
 }
 
