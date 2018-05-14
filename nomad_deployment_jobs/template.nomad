@@ -39,6 +39,7 @@ job "[[.job_name]]" {
         "TSG_CRDB_HOST" = "[[.crdb_cns]]"
         "TSG_NOMAD_URL" = "[[.nomad_cns]]"
         "TSG_NOMAD_PORT" = "[[.nomad_port]]"
+        "TSG_TSGCLI_VERSION" = "[[.tsgcli_version]]"
       }
 
       config {
