@@ -45,3 +45,7 @@ variable "api_version" {
 variable "api_release_version" {
   default = "0.2.11"
 }
+
+variable "tsgcli_version" {
+  default = "0.1.4"
+}
